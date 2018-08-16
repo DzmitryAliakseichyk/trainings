@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Authentication;
+using IdentityRole = Microsoft.AspNetCore.Identity.MongoDB.IdentityRole;
 
 namespace WebApi
 {
@@ -13,12 +14,11 @@ namespace WebApi
     {
         internal static void Configure(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<AppUserDbContext>(options => options.UseInMemoryDatabase("Db"));
-
-            services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<AppUserDbContext>()
+            var connectionString =
+                $"{configuration.GetSection("MongoConnection:ConnectionString").Value}/{configuration.GetSection("MongoConnection:Database").Value}";
+            services.AddIdentityWithMongoStoresUsingCustomTypes<AppUser, IdentityRole>(connectionString)
                 .AddDefaultTokenProviders();
-
+            
             services
                 .AddAuthentication(options =>
                 {
