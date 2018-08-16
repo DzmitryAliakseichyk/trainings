@@ -37,7 +37,12 @@ namespace WebApi
 
             ConfigureSettings.Configure(services, _configuration);
 
-            services.AddMvc()
+            services.AddMvc(options =>
+                {
+                    options.OutputFormatters.RemoveType<TextOutputFormatter>();
+                    options.OutputFormatters.RemoveType<XmlSerializerOutputFormatter>();
+                    options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
