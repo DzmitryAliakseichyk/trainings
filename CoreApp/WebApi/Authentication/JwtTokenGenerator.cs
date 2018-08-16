@@ -23,8 +23,8 @@ namespace WebApi.Authentication
             var claims = new[]
             {
                 new Claim(ClaimTypes.Sid, user.Id),
-
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, user.UserRole.ToString())
             };
 
             var credentials = new SigningCredentials(

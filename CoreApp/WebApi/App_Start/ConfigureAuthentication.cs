@@ -40,6 +40,10 @@ namespace WebApi
                     };
                 });
 
+            services.AddAuthorization(options =>
+                options.AddPolicy("AdministratorOnly", policy => policy.RequireRole(
+                    nameof(AppRole.Administrator), 
+                    nameof(AppRole.SuperAdministrator))));
         }
     }
 }
