@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WebApi.Extensions;
 
 namespace WebApi
 {
@@ -41,6 +45,8 @@ namespace WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseSecureHeadersMiddleware();
+
             if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -57,6 +63,8 @@ namespace WebApi
 
             app.UseAuthentication();
             app.UseMvc();
+
+          
         }
     }
 }

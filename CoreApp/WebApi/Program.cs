@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.IO;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace WebApi
@@ -12,6 +13,10 @@ namespace WebApi
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseKestrel(opt =>
+                {
+                    opt.AddServerHeader = false;
+                })
                 .ConfigureAppConfiguration(ConfigurationSetup.Configure)
                 .UseStartup<Startup>();
 
