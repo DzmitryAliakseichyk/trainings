@@ -1,12 +1,10 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Authentication;
-using IdentityRole = Microsoft.AspNetCore.Identity.MongoDB.IdentityRole;
 
 namespace WebApi
 {
@@ -16,9 +14,9 @@ namespace WebApi
         {
             var connectionString =
                 $"{configuration.GetSection("MongoConnection:ConnectionString").Value}/{configuration.GetSection("MongoConnection:Database").Value}";
-            services.AddIdentityWithMongoStoresUsingCustomTypes<AppUser, IdentityRole>(connectionString)
+            services.AddIdentityWithMongoStoresUsingCustomTypes<AppUser, AppRole>(connectionString)
                 .AddDefaultTokenProviders();
-            
+
             services
                 .AddAuthentication(options =>
                 {
@@ -42,8 +40,8 @@ namespace WebApi
 
             services.AddAuthorization(options =>
                 options.AddPolicy("AdministratorOnly", policy => policy.RequireRole(
-                    nameof(AppRole.Administrator), 
-                    nameof(AppRole.SuperAdministrator))));
+                    AppRoleEnum.Administrator.ToString(),
+                    AppRoleEnum.SuperAdministrator.ToString())));
         }
     }
 }

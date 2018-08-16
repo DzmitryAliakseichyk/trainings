@@ -43,8 +43,14 @@ namespace WebApi.Controllers
             {
                 UserName = "userName",
                 Email = loginViewModel.Email,
-                Id = Guid.NewGuid().ToString("N")
+                Id = Guid.NewGuid().ToString("N"),
+                Roles = new List<string>
+                {
+                    AppRoleEnum.Administrator.ToString(),
+                    AppRoleEnum.SuperAdministrator.ToString()
+                }
             };
+
             return Ok(_tokenGenerator.Generate(appUser));
         }
 

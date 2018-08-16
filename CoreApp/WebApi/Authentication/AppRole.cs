@@ -1,9 +1,8 @@
-﻿namespace WebApi.Authentication
+﻿using Microsoft.AspNetCore.Identity.MongoDB;
+
+namespace WebApi.Authentication
 {
-    public enum AppRole
+    public class AppRole : IdentityRole
     {
-        StandartUser,
-        Administrator,
-        SuperAdministrator
     }
 }
