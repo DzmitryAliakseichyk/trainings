@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Contrib.Microsoft.AspNetCore.Identity.MongoDB" Version="2.0.5" />
+    <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="1.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
   </ItemGroup>

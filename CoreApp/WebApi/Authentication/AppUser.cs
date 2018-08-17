@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.MongoDB;
+﻿using System;
+using AspNetCore.Identity.MongoDbCore.Models;
 
 namespace WebApi.Authentication
 {
-    public class AppUser : IdentityUser
+    public class AppUser : MongoIdentityUser<Guid>
     {
     }
 }

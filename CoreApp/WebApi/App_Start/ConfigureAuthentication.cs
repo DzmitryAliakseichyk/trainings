@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -12,9 +13,12 @@ namespace WebApi
     {
         internal static void Configure(IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString =
-                $"{configuration.GetSection("MongoConnection:ConnectionString").Value}/{configuration.GetSection("MongoConnection:Database").Value}";
-            services.AddIdentityWithMongoStoresUsingCustomTypes<AppUser, AppRole>(connectionString)
+            services
+                .AddIdentity<AppUser, AppRole>()
+                .AddMongoDbStores<AppUser, AppRole, Guid>(
+                    configuration.GetSection("MongoConnection:ConnectionString").Value, 
+                    configuration.GetSection("MongoConnection:Database").Value
+                    )
                 .AddDefaultTokenProviders();
 
             services

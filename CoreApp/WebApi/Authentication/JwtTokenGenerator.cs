@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Models;
@@ -14,23 +15,26 @@ namespace WebApi.Authentication
     public class JwtTokenGenerator : IJwtTokenGenerator
     {
         private readonly JwtSettingsModel _jwtSettings;
+        private readonly RoleManager<AppRole> _roleManager;
 
-        public JwtTokenGenerator(IOptions<JwtSettingsModel> jwtSettings)
+        public JwtTokenGenerator(IOptions<JwtSettingsModel> jwtSettings, RoleManager<AppRole> roleManager)
         {
             _jwtSettings = jwtSettings.Value;
+            _roleManager = roleManager;
         }
        
         public string Generate(AppUser user)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Sid, user.Id),
+                new Claim(ClaimTypes.Sid, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
             };
 
-            foreach (var role in user.Roles)
+            var roles = _roleManager.Roles.Where(r => user.Roles.Contains(r.Id)).ToList();
+            foreach (var role in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim(ClaimTypes.Role, role.RoleEnumValue.ToString()));
             }
 
             var credentials = new SigningCredentials(

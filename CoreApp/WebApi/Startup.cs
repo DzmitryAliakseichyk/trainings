@@ -67,6 +67,9 @@ namespace WebApi
             app.UseStaticFiles();
 
             app.UseAuthentication();
+
+            UserDatabaseInitializer.Initialize(app);
+
             app.UseMvc();
 
           

@@ -37,19 +37,20 @@ namespace WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult Login(LoginViewModel loginViewModel)
+        public async Task<IActionResult> CreateAndLoginUser(LoginViewModel loginViewModel)
         {
             var appUser = new AppUser
             {
                 UserName = "userName",
-                Email = loginViewModel.Email,
-                Id = Guid.NewGuid().ToString("N"),
-                Roles = new List<string>
+                Email = loginViewModel.Email
+            };
+
+            await _userManager.AddToRolesAsync(appUser, new List<string>
                 {
                     AppRoleEnum.Administrator.ToString(),
                     AppRoleEnum.SuperAdministrator.ToString()
                 }
-            };
+            );
 
             return Ok(_tokenGenerator.Generate(appUser));
         }

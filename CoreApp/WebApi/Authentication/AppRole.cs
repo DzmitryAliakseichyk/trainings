@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity.MongoDB;
+﻿
+using System;
+using AspNetCore.Identity.MongoDbCore.Models;
 
 namespace WebApi.Authentication
 {
-    public class AppRole : IdentityRole
+    public class AppRole : MongoIdentityRole<Guid>
     {
+        public AppRoleEnum RoleEnumValue { get; set; }
     }
 }
