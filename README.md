@@ -57,3 +57,17 @@ Here will be placed results of understanding new features and improvements of .N
     [readWrite role (MongoDB 4.0 documentation)](https://docs.mongodb.com/manual/reference/built-in-roles/#readWrite)
 
 
+## Setup Elastic search
+
+We will use docker image for development needs.
+Provided steps below are described on https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+1. Install docker
+2. Switch docker to use linux container
+3. Get container from docker
+    ```
+    docker pull docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    ```
+4. run container
+    ```
+    docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    ```
