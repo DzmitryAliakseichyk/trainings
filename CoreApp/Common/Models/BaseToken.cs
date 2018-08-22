@@ -2,7 +2,7 @@
 
 namespace Common.Models
 {
-    public class Token : BaseModel
+    public abstract class BaseToken : BaseModel
     {
         public string Username { get; set; }
 

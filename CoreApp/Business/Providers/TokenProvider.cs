@@ -23,16 +23,16 @@ namespace Business.Providers
 
         public async Task Save(string refreshToken, string accessTokenSignature, string userName)
         {
-            await _refreshTokenRepository.Upsert(new Token
+            await _refreshTokenRepository.Create(new RefreshToken
             {
                 Id = Guid.Parse(refreshToken),
                 Username = userName,
                 ExpirationDate = DateTimeOffset.Now.AddDays(RefreshTokenLifeTime)
             });
 
-            await _accessTokenRepository.Upsert(new Token
+            await _accessTokenRepository.Create(new AccessToken
             {
-                Id = accessTokenSignature,
+                TokenSignature = accessTokenSignature,
                 Username = userName,
                 ExpirationDate = DateTimeOffset.Now.AddMinutes(AccessTokenLifeTime)
             });
@@ -41,7 +41,7 @@ namespace Business.Providers
         public async Task Delete(string refreshToken, string accessToken)
         {
             await _refreshTokenRepository.Delete(Guid.Parse(refreshToken));
-            await _accessTokenRepository.Delete(accessToken);
+            await _accessTokenRepository.Delete(x => x.TokenSignature.Equals(accessToken));
         }
 
         public async Task Revoke(string userName)

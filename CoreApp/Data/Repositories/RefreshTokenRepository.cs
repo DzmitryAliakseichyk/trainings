@@ -7,8 +7,8 @@ using MongoDB.Driver;
 
 namespace Data.Repositories
 {
-    public class RefreshTokenRepository : Repository<Token>, IRefreshTokenRepository
-    {
+    public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRepository
+    { 
         public RefreshTokenRepository(
             IMongoWrapper mongoWrapper,
             ILogger<RefreshTokenRepository> logger) : base(mongoWrapper, logger)

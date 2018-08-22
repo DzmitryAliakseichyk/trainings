@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace Data.Repositories
 {
-    public abstract class Repository<T> where T : BaseModel
+    public abstract class Repository<T> : IRepository<T> where T : BaseModel
     {
         protected readonly ILogger<Repository<T>> Logger;
         protected readonly IMongoDatabase Db;
@@ -24,14 +24,11 @@ namespace Data.Repositories
             Db = mongoWrapper.Database;
         }
 
-        public virtual async Task<T> Upsert(T token)
+        public virtual async Task<T> Create(T token)
         {
             try
             {
-                var result = await MongoCollection.ReplaceOneAsync(
-                    filter: f => f.Id == token.Id,
-                    options: new UpdateOptions { IsUpsert = true },
-                    replacement: token);
+                await MongoCollection.InsertOneAsync(token);
             }
             catch (Exception exception)
             {
@@ -42,7 +39,24 @@ namespace Data.Repositories
             return token;
         }
 
-        public virtual async Task Delete(object id)
+        public virtual async Task<T> Update(T token)
+        {
+            try
+            {
+                var result = await MongoCollection.ReplaceOneAsync(
+                    f => f.Id == token.Id,
+                    token);
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, exception.Message);
+                throw;
+            }
+
+            return token;
+        }
+        
+        public virtual async Task Delete(Guid id)
         {
             try
             {

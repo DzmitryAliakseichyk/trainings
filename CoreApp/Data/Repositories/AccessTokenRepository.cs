@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Data.Repositories
 {
-    public class AccessTokenRepository : Repository<Token>, IAccessTokenRepository
+    public class AccessTokenRepository : Repository<AccessToken>, IAccessTokenRepository
     {
         public AccessTokenRepository(
             IMongoWrapper mongoWrapper,

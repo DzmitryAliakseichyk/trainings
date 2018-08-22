@@ -2,8 +2,8 @@
 
 namespace Common.Models
 {
-    public class BaseModel
+    public abstract class BaseModel
     {
-        public object Id { get; set; }
+        public Guid Id { get; set; }
     }
 }
