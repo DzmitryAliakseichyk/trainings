@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Business.Providers;
+using Data;
 using Data.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ namespace WebApi
 
             services.AddSingleton<IMongoWrapper, MongoWrapper>();
             services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddTransient<IAccessTokenRepository, AccessTokenRepository>();
+            services.AddTransient<ITokenProvider, TokenProvider>();
         }
     }
 }

@@ -4,7 +4,7 @@ using Common.Models;
 
 namespace Data.Repositories
 {
-    public interface IRefreshTokenRepository
+    public interface IAccessTokenRepository
     {
         Task<Token> Upsert(Token token);
         Task Delete(object id);

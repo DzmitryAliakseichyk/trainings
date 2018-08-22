@@ -1,12 +1,9 @@
 ﻿using System;
-using MongoDB.Bson.Serialization.Attributes;
 
-namespace Data.Models
+namespace Common.Models
 {
-    public class RefreshToken
+    public class Token : BaseModel
     {
-        public Guid Id { get; set; }
-
         public string Username { get; set; }
 
         public DateTimeOffset ExpirationDate { get; set; }

@@ -48,8 +48,13 @@ namespace WebApi.Authentication
                 signingCredentials: credentials,
                 expires: DateTime.Now.AddMinutes(_jwtSettings.ExpitarionsOffsetInMinutes)
             );
-
+            
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GetTokenSignature(string jwtToken)
+        {
+            return new JwtSecurityTokenHandler().ReadJwtToken(jwtToken).RawSignature;
         }
     }
 }

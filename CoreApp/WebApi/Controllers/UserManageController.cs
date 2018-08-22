@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Business.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,15 @@ namespace WebApi.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IPasswordGenerator _passwordGenerator;
+        private readonly ITokenProvider _tokenProvider;
 
         public UserManageController(UserManager<AppUser> userManager,
-            IPasswordGenerator passwordGenerator)
+            IPasswordGenerator passwordGenerator, 
+            ITokenProvider tokenProvider)
         {
             _userManager = userManager;
             _passwordGenerator = passwordGenerator;
+            _tokenProvider = tokenProvider;
         }
 
 
@@ -52,6 +56,15 @@ namespace WebApi.Controllers
             }
 
             return BadRequest();
+        }
+
+        [HttpPost]
+        [Route("api/[controller]/[action]")]
+        public async Task<IActionResult> RevokeUser([FromBody] string userName)
+        {
+            await _tokenProvider.Revoke(userName);
+
+            return Ok();
         }
     }
 }

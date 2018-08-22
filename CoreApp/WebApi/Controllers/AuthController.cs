@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Business.Providers;
+using Common.Models;
 using Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,16 +31,20 @@ namespace WebApi.Controllers
 
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
+        private readonly ITokenProvider _tokenProvider;
+
         public AuthController(IJwtTokenGenerator jwtTokenGenerator,
             IRefreshTokenGenerator refreshTokenGenerator,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager, 
-            IRefreshTokenRepository refreshTokenRepository)
+            IRefreshTokenRepository refreshTokenRepository, 
+            ITokenProvider tokenProvider)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userManager = userManager;
             _signInManager = signInManager;
             _refreshTokenRepository = refreshTokenRepository;
+            _tokenProvider = tokenProvider;
             _refreshTokenGenerator = refreshTokenGenerator;
         }
 
@@ -60,13 +66,8 @@ namespace WebApi.Controllers
                     RefreshToken = _refreshTokenGenerator.Generate()
                 };
 
-                var refreshToken = await _refreshTokenRepository.Create(token.RefreshToken, appUser.UserName);
-
-                if (refreshToken == null)
-                {
-                    return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
-                }
-
+                await _tokenProvider.Save(token.RefreshToken, _jwtTokenGenerator.GetTokenSignature(token.AccessToken), appUser.UserName);
+                
                 return new OkObjectResult(token);
             }
 
@@ -80,25 +81,10 @@ namespace WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> SingOut([FromQuery] string refreshToken)
+        public async Task<IActionResult> SingOut([FromQuery] string refreshToken, [FromQuery] string accessTokenSignature)
         {
-            var userId = HttpContext.User.Claims.FirstOrDefault(x => x.ValueType == ClaimTypes.Sid)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return new NotFoundResult();
-            }
-
-            var appUser = await _userManager.FindByIdAsync(userId);
-            if (appUser == null)
-            {
-                return new NotFoundResult();
-            }
-
-            await _refreshTokenRepository.Remove(refreshToken);
-            
+            await _tokenProvider.Delete(refreshToken, accessTokenSignature);
             return new OkResult();
-
-
         }
     }
 }
