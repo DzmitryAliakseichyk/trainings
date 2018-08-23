@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace WebApi.Authentication
+namespace WebApi.Authentication.Generators
 {
     public interface IPasswordGenerator
     {

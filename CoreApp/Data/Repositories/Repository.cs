@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Models;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Data.Repositories
@@ -29,6 +30,34 @@ namespace Data.Repositories
             try
             {
                 await MongoCollection.InsertOneAsync(token);
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, exception.Message);
+                throw;
+            }
+
+            return token;
+        }
+
+        public virtual async Task<T> Get(Guid id)
+        {
+            var token = default(T);
+            try
+            {
+                using (var cursor = await MongoCollection.FindAsync(x => x.Id == id))
+                {
+                    while (await cursor.MoveNextAsync())
+                    {
+                        var batch = cursor.Current;
+                        foreach (var document in batch)
+                        {
+                            token = document;
+                            break;
+                        }
+                    }
+                }
+
             }
             catch (Exception exception)
             {
@@ -69,11 +98,11 @@ namespace Data.Repositories
             }
         }
 
-        public virtual async Task Delete(Func<T, bool> condition)
+        public virtual async Task Delete(Expression<Func<T, bool>> condition)
         {
             try
             {
-                await MongoCollection.DeleteManyAsync(x => condition.Invoke(x));
+                await MongoCollection.DeleteManyAsync<T>(condition);
             }
             catch (Exception exception)
             {

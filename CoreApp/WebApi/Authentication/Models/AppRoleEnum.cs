@@ -1,4 +1,4 @@
-﻿namespace WebApi.Authentication
+﻿namespace WebApi.Authentication.Models
 {
     public enum AppRoleEnum
     {

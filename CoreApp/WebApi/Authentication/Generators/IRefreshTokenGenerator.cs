@@ -1,4 +1,4 @@
-﻿namespace WebApi.Authentication
+﻿namespace WebApi.Authentication.Generators
 {
     public interface IRefreshTokenGenerator
     {

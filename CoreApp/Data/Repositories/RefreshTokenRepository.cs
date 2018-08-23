@@ -1,9 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Common.Models;
+﻿using Common.Models;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 namespace Data.Repositories
 {

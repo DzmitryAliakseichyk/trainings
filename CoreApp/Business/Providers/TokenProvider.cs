@@ -21,33 +21,62 @@ namespace Business.Providers
             _accessTokenRepository = accessTokenRepository;
         }
 
-        public async Task Save(string refreshToken, string accessTokenSignature, string userName)
+        public async Task CreateRefreshToken(string refreshToken, Guid userId)
         {
             await _refreshTokenRepository.Create(new RefreshToken
             {
                 Id = Guid.Parse(refreshToken),
-                Username = userName,
+                UserId = userId,
                 ExpirationDate = DateTimeOffset.Now.AddDays(RefreshTokenLifeTime)
-            });
-
-            await _accessTokenRepository.Create(new AccessToken
-            {
-                TokenSignature = accessTokenSignature,
-                Username = userName,
-                ExpirationDate = DateTimeOffset.Now.AddMinutes(AccessTokenLifeTime)
             });
         }
 
-        public async Task Delete(string refreshToken, string accessToken)
+        public async Task CreateAccessToken(string signature, DateTimeOffset expirationDate, Guid userId)
         {
-            await _refreshTokenRepository.Delete(Guid.Parse(refreshToken));
+            await _accessTokenRepository.Create(new AccessToken
+            {
+                TokenSignature = signature,
+                UserId = userId,
+                ExpirationDate = expirationDate
+            });
+        }
+        
+        public async Task<RefreshToken> GetRefreshToken(Guid refreshToken)
+        {
+            var token = await _refreshTokenRepository.Get(refreshToken);
+            return token;
+        }
+
+        public async Task UpdateRefreshToken(Guid refreshToken)
+        {
+            var token = await _refreshTokenRepository.Get(refreshToken);
+
+            await _refreshTokenRepository.Update(new RefreshToken
+            {
+                Id = token.Id,
+                UserId = token.UserId,
+                ExpirationDate = DateTimeOffset.Now.AddDays(RefreshTokenLifeTime)
+            });
+        }
+
+        public async Task DeleteRefreshTokens(Guid refreshToken)
+        {
+            await _refreshTokenRepository.Delete(refreshToken);
+        }
+        
+        public async Task DeleteAccessToken(string accessToken)
+        {
             await _accessTokenRepository.Delete(x => x.TokenSignature.Equals(accessToken));
         }
 
-        public async Task Revoke(string userName)
+        public async Task DeleteRefreshTokensByUserId(Guid userId)
         {
-            await _refreshTokenRepository.Delete(x => x.Username.Equals(userName, StringComparison.OrdinalIgnoreCase));
-            await _accessTokenRepository.Delete(x => x.Username.Equals(userName, StringComparison.OrdinalIgnoreCase));
+            await _refreshTokenRepository.Delete(x => x.UserId == userId);
+        }
+
+        public async Task DeleteAccessTokenByUserId(Guid userId)
+        {
+            await _accessTokenRepository.Delete(x => x.UserId == userId);
         }
     }
 }

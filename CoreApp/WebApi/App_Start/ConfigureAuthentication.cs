@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Authentication;
+using WebApi.Authentication.Models;
 
 namespace WebApi
 {

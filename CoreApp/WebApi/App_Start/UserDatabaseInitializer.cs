@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Authentication;
+using WebApi.Authentication.Models;
 
 namespace WebApi
 {

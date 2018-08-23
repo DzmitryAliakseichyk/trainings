@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.Authentication
+namespace WebApi.Authentication.Generators
 {
     public class RefreshTokenGenerator : IRefreshTokenGenerator
     {
