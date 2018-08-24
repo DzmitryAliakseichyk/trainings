@@ -10,12 +10,14 @@ namespace Data.Repositories
 {
     public abstract class Repository<T> : IRepository<T> where T : BaseModel
     {
+        private readonly Lazy<IMongoCollection<T>> _mongoCollectionInstance;
+
         protected readonly ILogger<Repository<T>> Logger;
         protected readonly IMongoDatabase Db;
 
         protected abstract string CollectionName { get; }
 
-        protected IMongoCollection<T> MongoCollection => Db.GetCollection<T>(CollectionName);
+        protected IMongoCollection<T> MongoCollection => _mongoCollectionInstance.Value;
 
         protected Repository(
             IMongoWrapper mongoWrapper,
@@ -23,6 +25,7 @@ namespace Data.Repositories
         {
             Logger = logger;
             Db = mongoWrapper.Database;
+            _mongoCollectionInstance = new Lazy<IMongoCollection<T>>(() => Db.GetCollection<T>(CollectionName));
         }
 
         public virtual async Task<T> Create(T token)
@@ -57,7 +60,6 @@ namespace Data.Repositories
                         }
                     }
                 }
-
             }
             catch (Exception exception)
             {
@@ -67,7 +69,7 @@ namespace Data.Repositories
 
             return token;
         }
-        
+
         public virtual async Task<T> Get(Guid id)
         {
             return await Get(x => x.Id == id);
@@ -102,7 +104,7 @@ namespace Data.Repositories
 
             return token;
         }
-        
+
         public virtual async Task Delete(Expression<Func<T, bool>> condition)
         {
             try
