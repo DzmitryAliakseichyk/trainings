@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Identity;
 
-namespace WebApi.Authentication
+namespace WebApi.Authentication.Generators
 {
     public class PasswordGenerator : IPasswordGenerator
     {

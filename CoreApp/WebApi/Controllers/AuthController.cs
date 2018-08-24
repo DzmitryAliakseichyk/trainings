@@ -12,12 +12,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authentication;
+using WebApi.Authentication.Generators;
+using WebApi.Authentication.Helpers;
+using WebApi.Authentication.Models;
 using WebApi.Models;
 using WebApi.ViewModels;
 
 namespace WebApi.Controllers
 {
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -33,40 +36,55 @@ namespace WebApi.Controllers
 
         private readonly ITokenProvider _tokenProvider;
 
+        private readonly IJwtTokenHelper _jwtTokenHelper;
+
         public AuthController(IJwtTokenGenerator jwtTokenGenerator,
             IRefreshTokenGenerator refreshTokenGenerator,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager, 
             IRefreshTokenRepository refreshTokenRepository, 
-            ITokenProvider tokenProvider)
+            ITokenProvider tokenProvider, 
+            IJwtTokenHelper jwtTokenHelper)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userManager = userManager;
             _signInManager = signInManager;
             _refreshTokenRepository = refreshTokenRepository;
             _tokenProvider = tokenProvider;
+            _jwtTokenHelper = jwtTokenHelper;
             _refreshTokenGenerator = refreshTokenGenerator;
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> SingIn([FromBody] LoginViewModel loginViewModel)
+        public async Task<IActionResult> SignIn([FromBody] LoginViewModel loginViewModel)
         {
-            var appUser = await _userManager.FindByEmailAsync(loginViewModel.Email);
-            if (appUser == null)
+            var user = await _userManager.FindByEmailAsync(loginViewModel.Email);
+            if (user == null)
             {
                 return new NotFoundResult();
             }
-            var result = await _signInManager.CheckPasswordSignInAsync(appUser, loginViewModel.Password, false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginViewModel.Password, false);
             if (result.Succeeded)
             {
                 var token = new JwtTokenViewModel
                 {
-                    AccessToken = _jwtTokenGenerator.Generate(appUser),
+                    AccessToken = _jwtTokenGenerator.Generate(user),
                     RefreshToken = _refreshTokenGenerator.Generate()
                 };
 
-                await _tokenProvider.Save(token.RefreshToken, _jwtTokenGenerator.GetTokenSignature(token.AccessToken), appUser.UserName);
+                try
+                {
+                    await _tokenProvider.RegisterRefreshToken(token.RefreshToken, user.Id);
+                    await _tokenProvider.RegisterAccessToken(
+                        _jwtTokenHelper.GetSignature(token.AccessToken),
+                        _jwtTokenHelper.GetExpirationDate(token.AccessToken),
+                        user.Id);
+                }
+                catch (Exception)
+                {
+                    return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                }
                 
                 return new OkObjectResult(token);
             }
@@ -79,11 +97,19 @@ namespace WebApi.Controllers
             return new ForbidResult();
         }
 
-        [HttpGet]
+        [HttpPost]
         [Authorize]
-        public async Task<IActionResult> SingOut([FromQuery] string refreshToken, [FromQuery] string accessTokenSignature)
+        public async Task<IActionResult> SignOut([FromBody] SignOutViewModel signOutViewModel)
         {
-            await _tokenProvider.Delete(refreshToken, accessTokenSignature);
+            try
+            {
+                await _tokenProvider.DeleteRefreshTokenById(signOutViewModel.RefreshToken);
+                await _tokenProvider.DeleteAccessToken(signOutViewModel.AccessTokenSignature);
+            }
+            catch (Exception)
+            {
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
             return new OkResult();
         }
     }
