@@ -13,13 +13,15 @@ namespace WebApi.Jobs
 
         private DateTime _nextRunTime;
 
+        public Task CurrenTask { get; set; } = null;
+
         private IScheduledTask _task { get; }
 
         public ScheduleTaskWrapper(IScheduledTask task)
         {
             _task = task;
             _schedule = CrontabSchedule.Parse(_task.Cron);
-            _nextRunTime = _schedule.GetNextOccurrence(DateTime.UtcNow);
+            _nextRunTime = _schedule.GetNextOccurrence(DateTime.Now);
         }
 
         public void SetNextRunTime()

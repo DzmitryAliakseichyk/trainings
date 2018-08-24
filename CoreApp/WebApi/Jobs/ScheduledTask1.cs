@@ -6,7 +6,7 @@ namespace WebApi.Jobs
 {
     public class ScheduledTask1 : IScheduledTask
     {
-        public string Cron => "*/5 * * * * *";
+        public string Cron => "*/1 * * * *";
 
         public Task ExecuteAsync(CancellationToken cancellationToken)
         {

@@ -25,15 +25,20 @@ namespace WebApi.Jobs
             while (!cancellationToken.IsCancellationRequested)
             {
                 var taskFactory = new TaskFactory(TaskScheduler.Current);
-                var referenceTime = DateTime.UtcNow;
+                var referenceTime = DateTime.Now;
 
                 var tasksThatShouldRun = _scheduledTasks.Where(t => t.ShouldRun(referenceTime)).ToList();
 
                 foreach (var taskThatShouldRun in tasksThatShouldRun)
                 {
-                    taskThatShouldRun.SetNextRunTime();
+                    var currentTask = taskThatShouldRun.CurrenTask;
 
-                    await taskFactory.StartNew(
+                    if (currentTask != null && currentTask.Status == TaskStatus.Running)
+                    {
+                        continue;
+                    }
+
+                    taskThatShouldRun.CurrenTask = await taskFactory.StartNew(
                         async () =>
                         {
                             try
@@ -56,7 +61,7 @@ namespace WebApi.Jobs
                         cancellationToken);
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken);
             }
         }
     }
