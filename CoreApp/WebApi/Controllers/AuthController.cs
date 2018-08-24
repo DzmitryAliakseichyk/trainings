@@ -75,8 +75,8 @@ namespace WebApi.Controllers
 
                 try
                 {
-                    await _tokenProvider.CreateRefreshToken(token.RefreshToken, user.Id);
-                    await _tokenProvider.CreateAccessToken(
+                    await _tokenProvider.RegisterRefreshToken(token.RefreshToken, user.Id);
+                    await _tokenProvider.RegisterAccessToken(
                         _jwtTokenHelper.GetSignature(token.AccessToken),
                         _jwtTokenHelper.GetExpirationDate(token.AccessToken),
                         user.Id);

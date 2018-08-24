@@ -21,7 +21,7 @@ namespace Business.Providers
             _accessTokenRepository = accessTokenRepository;
         }
 
-        public async Task CreateRefreshToken(string refreshToken, Guid userId)
+        public async Task RegisterRefreshToken(string refreshToken, Guid userId)
         {
             await _refreshTokenRepository.Create(new RefreshToken
             {
@@ -31,7 +31,7 @@ namespace Business.Providers
             });
         }
 
-        public async Task CreateAccessToken(string signature, DateTimeOffset expirationDate, Guid userId)
+        public async Task RegisterAccessToken(string signature, DateTimeOffset expirationDate, Guid userId)
         {
             await _accessTokenRepository.Create(new AccessToken
             {
@@ -45,6 +45,11 @@ namespace Business.Providers
         {
             var token = await _refreshTokenRepository.Get(refreshToken);
             return token;
+        }
+
+        public Task<bool> IsAccessTokenRegistered(string accessToken)
+        {
+            return _accessTokenRepository.CheckIfExist(x => x.TokenSignature.Equals(accessToken));
         }
 
         public async Task UpdateRefreshToken(Guid refreshToken)
