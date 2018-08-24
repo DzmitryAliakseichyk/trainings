@@ -40,12 +40,12 @@ namespace Data.Repositories
             return token;
         }
 
-        public virtual async Task<T> Get(Guid id)
+        public virtual async Task<T> Get(Expression<Func<T, bool>> condition)
         {
             var token = default(T);
             try
             {
-                using (var cursor = await MongoCollection.FindAsync(x => x.Id == id))
+                using (var cursor = await MongoCollection.FindAsync(condition))
                 {
                     while (await cursor.MoveNextAsync())
                     {
@@ -67,6 +67,24 @@ namespace Data.Repositories
 
             return token;
         }
+        
+        public virtual async Task<T> Get(Guid id)
+        {
+            return await Get(x => x.Id == id);
+        }
+
+        public virtual async Task<bool> CheckIfExist(Expression<Func<T, bool>> condition)
+        {
+            try
+            {
+                return await MongoCollection.Find(condition).CountDocumentsAsync() > 0;
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, exception.Message);
+                throw;
+            }
+        }
 
         public virtual async Task<T> Update(T token)
         {
@@ -85,19 +103,6 @@ namespace Data.Repositories
             return token;
         }
         
-        public virtual async Task Delete(Guid id)
-        {
-            try
-            {
-                await MongoCollection.DeleteOneAsync(x => x.Id == id);
-            }
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, exception.Message);
-                throw;
-            }
-        }
-
         public virtual async Task Delete(Expression<Func<T, bool>> condition)
         {
             try
@@ -109,6 +114,11 @@ namespace Data.Repositories
                 Logger.LogError(exception, exception.Message);
                 throw;
             }
+        }
+
+        public virtual async Task Delete(Guid id)
+        {
+            await Delete(x => x.Id == id);
         }
     }
 }
