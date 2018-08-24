@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common.Models;
 using Data.Repositories;
@@ -64,14 +65,16 @@ namespace Business.Providers
             });
         }
 
-        public async Task DeleteRefreshTokens(Guid refreshToken)
+        #region Delete
+
+        public async Task DeleteRefreshToken(Expression<Func<RefreshToken, bool>> condition)
+        {
+            await _refreshTokenRepository.Delete(condition);
+        }
+
+        public async Task DeleteRefreshTokenById(Guid refreshToken)
         {
             await _refreshTokenRepository.Delete(refreshToken);
-        }
-        
-        public async Task DeleteAccessToken(string accessToken)
-        {
-            await _accessTokenRepository.Delete(x => x.TokenSignature.Equals(accessToken));
         }
 
         public async Task DeleteRefreshTokensByUserId(Guid userId)
@@ -79,9 +82,21 @@ namespace Business.Providers
             await _refreshTokenRepository.Delete(x => x.UserId == userId);
         }
 
+        public async Task DeleteAccessToken(Expression<Func<AccessToken, bool>> condition)
+        {
+            await _accessTokenRepository.Delete(condition);
+        }
+
+        public async Task DeleteAccessToken(string accessToken)
+        {
+            await _accessTokenRepository.Delete(x => x.TokenSignature.Equals(accessToken));
+        }
+
         public async Task DeleteAccessTokenByUserId(Guid userId)
         {
             await _accessTokenRepository.Delete(x => x.UserId == userId);
         }
+
+        #endregion
     }
 }

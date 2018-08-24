@@ -103,7 +103,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                await _tokenProvider.DeleteRefreshTokens(signOutViewModel.RefreshToken);
+                await _tokenProvider.DeleteRefreshTokenById(signOutViewModel.RefreshToken);
                 await _tokenProvider.DeleteAccessToken(signOutViewModel.AccessTokenSignature);
             }
             catch (Exception)
