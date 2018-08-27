@@ -8,6 +8,15 @@ namespace WebApi.Jobs
 {
     public class SchedulerHostedService : BaseHostedService
     {
+        private const int RecurrenceInSecs = 60;
+
+        public static readonly TaskStatus[] TaskFinishedStatuses = 
+        {
+            TaskStatus.RanToCompletion,
+            TaskStatus.Canceled,
+            TaskStatus.Faulted
+        };
+
         public event EventHandler<UnobservedTaskExceptionEventArgs> UnobservedTaskException;
 
         private readonly List<ScheduleTaskWrapper> _scheduledTasks = new List<ScheduleTaskWrapper>();
@@ -33,35 +42,42 @@ namespace WebApi.Jobs
                 {
                     var currentTask = taskThatShouldRun.CurrenTask;
 
-                    if (currentTask != null && currentTask.Status == TaskStatus.Running)
+                    if (currentTask != null && !TaskFinishedStatuses.Contains(currentTask.Status))
                     {
                         continue;
                     }
 
-                    taskThatShouldRun.CurrenTask = await taskFactory.StartNew(
-                        async () =>
-                        {
-                            try
-                            {
-                                await taskThatShouldRun.RunTask(cancellationToken);
-                            }
-                            catch (Exception ex)
-                            {
-                                var args = new UnobservedTaskExceptionEventArgs(
-                                    ex as AggregateException ?? new AggregateException(ex));
+                    if (currentTask?.IsCompleted == true)
+                    {
+                        currentTask.Dispose();
+                    }
 
-                                UnobservedTaskException?.Invoke(this, args);
-
-                                if (!args.Observed)
+                    taskThatShouldRun.CurrenTask = taskFactory
+                        .StartNew(
+                            async () =>
+                            {
+                                try
                                 {
-                                    throw;
+                                    await taskThatShouldRun.RunTask(cancellationToken);
                                 }
-                            }
-                        },
-                        cancellationToken);
+                                catch (Exception ex)
+                                {
+                                    var args = new UnobservedTaskExceptionEventArgs(
+                                        ex as AggregateException ?? new AggregateException(ex));
+
+                                    UnobservedTaskException?.Invoke(this, args);
+
+                                    if (!args.Observed)
+                                    {
+                                        throw;
+                                    }
+                                }
+                            },
+                            cancellationToken)
+                        .Unwrap();
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(RecurrenceInSecs), cancellationToken);
             }
         }
     }
