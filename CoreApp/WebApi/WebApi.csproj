@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Business\Business.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Data\Data.csproj" />
+    <ProjectReference Include="..\ScheduledJobs\ScheduledJobs.csproj" />
   </ItemGroup>
 
 </Project>

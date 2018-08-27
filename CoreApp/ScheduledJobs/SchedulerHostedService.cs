@@ -4,19 +4,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WebApi.Jobs
+namespace ScheduledJobs
 {
     public class SchedulerHostedService : BaseHostedService
     {
         private const int RecurrenceInSecs = 60;
-
-        public static readonly TaskStatus[] TaskFinishedStatuses = 
-        {
-            TaskStatus.RanToCompletion,
-            TaskStatus.Canceled,
-            TaskStatus.Faulted
-        };
-
+        
         public event EventHandler<UnobservedTaskExceptionEventArgs> UnobservedTaskException;
 
         private readonly List<ScheduleTaskWrapper> _scheduledTasks = new List<ScheduleTaskWrapper>();
@@ -42,7 +35,7 @@ namespace WebApi.Jobs
                 {
                     var currentTask = taskThatShouldRun.CurrenTask;
 
-                    if (currentTask != null && !TaskFinishedStatuses.Contains(currentTask.Status))
+                    if (currentTask != null && !TaskStatuses.FinishedStatuses.Contains(currentTask.Status))
                     {
                         continue;
                     }
