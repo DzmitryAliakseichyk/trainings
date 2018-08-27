@@ -11,8 +11,9 @@ namespace WebApi
     {
         internal static void Configure(IServiceCollection services, IConfiguration configuration, ILoggerFactory _loggerFactory)
         {
-            services.AddSingleton<IScheduledTask, ScheduledTask1>();
-            services.AddSingleton<IScheduledTask, ScheduledTask2>();
+            //uncomment us to see scheduler in action
+            //services.AddSingleton<IScheduledTask, ScheduledTask1>();
+            //services.AddSingleton<IScheduledTask, ScheduledTask2>();
 
             var logger = _loggerFactory.CreateLogger("ScheduledTasks");
             services.AddTransient<IHostedService, SchedulerHostedService>(serviceProvider =>

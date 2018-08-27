@@ -11,7 +11,12 @@ namespace WebApi.Jobs
         public Task ExecuteAsync(CancellationToken cancellationToken)
         {
             Console.WriteLine("SheduleTask1");
-            return Task.FromResult(0);
+            for (int i = 0; i < 100; i++)
+            {
+                Console.WriteLine($"SheduleTask1 In progress {i} from {1000} is done");
+                Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).GetAwaiter().GetResult();
+            }
+            throw new NullReferenceException();
         }
     }
 }
