@@ -51,7 +51,7 @@ namespace WebApi.Jobs
                     {
                         currentTask.Dispose();
                     }
-
+                    taskThatShouldRun.SetNextRunTime();
                     taskThatShouldRun.CurrenTask = taskFactory
                         .StartNew(
                             async () =>
