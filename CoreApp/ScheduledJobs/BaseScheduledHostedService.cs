@@ -7,7 +7,7 @@ using NCrontab;
 
 namespace ScheduledJobs
 {
-    public abstract class BackgroundService : BaseHostedService
+    public abstract class BaseScheduledHostedService : BaseHostedService
     {
         private Task _currentTask = null;
 
@@ -19,12 +19,7 @@ namespace ScheduledJobs
 
         protected DateTime NextRun { get; set; }
         
-        protected readonly ILogger<BackgroundService> Logger;
-        
-        protected BackgroundService(ILogger<BackgroundService> logger)
-        {
-            Logger = logger;
-        }
+        protected abstract ILogger Logger { get; }
 
         protected abstract Task Process();
 
