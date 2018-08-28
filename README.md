@@ -57,3 +57,11 @@ Here will be placed results of understanding new features and improvements of .N
     [readWrite role (MongoDB 4.0 documentation)](https://docs.mongodb.com/manual/reference/built-in-roles/#readWrite)
 
 
+## Background tasks
+    We figured out the app would need to run scheduled background tasks like Db maintenence, sending emails, etc.
+    asp.net core 2.0  provides a IHostedService 
+    We implement several approches of task scheduling:
+    1. Dispatcher (SchedulerHostedService) for managing scheduled tasks (IScheduledTask).
+    2. Job that inherits BaseScheduledHostedService
+
+[Implement background tasks in microservices with IHostedService and the BackgroundService class](https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/multi-container-microservice-net-applications/background-tasks-with-ihostedservic)
