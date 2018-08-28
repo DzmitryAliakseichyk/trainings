@@ -55,8 +55,16 @@ namespace WebApi.Controllers
             _refreshTokenGenerator = refreshTokenGenerator;
         }
 
+        /// <summary>
+        /// SignIn into application.
+        /// </summary>
+        /// <response code="200">Tokens are generated and registered</response>
+        /// <response code="403">User is locked or not allowed</response>
+        /// <response code="404">User not found</response>
+        /// <response code="500">Internal error (tokens are not generated or registered)</response>
         [HttpPost]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(JwtTokenViewModel), 200)]
         public async Task<IActionResult> SignIn([FromBody] LoginViewModel loginViewModel)
         {
             var user = await _userManager.FindByEmailAsync(loginViewModel.Email);
@@ -97,10 +105,17 @@ namespace WebApi.Controllers
             return new ForbidResult();
         }
 
+        /// <summary>
+        /// SignOut from application.
+        /// </summary>
+        /// <response code="200">Tokens are unregistered</response>
+        /// <response code="500">Internal error (tokens are not unregister)</response>
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> SignOut([FromBody] SignOutViewModel signOutViewModel)
         {
+            //todo: check is user exist
+
             try
             {
                 await _tokenProvider.DeleteRefreshTokenById(signOutViewModel.RefreshToken);

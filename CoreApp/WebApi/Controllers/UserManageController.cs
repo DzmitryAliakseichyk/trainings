@@ -29,7 +29,10 @@ namespace WebApi.Controllers
             _tokenProvider = tokenProvider;
         }
 
-
+        /// <summary>
+        /// Create new user
+        /// </summary>
+        /// <response code="200">User created succesfully</response>
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserViewModel model)
         {
@@ -38,12 +41,20 @@ namespace WebApi.Controllers
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
+                //todo: return created user
                 return Ok();
             }
 
             return BadRequest();
         }
 
+        /// <summary>
+        /// Generate random user
+        /// </summary>
+        /// <remarks>
+        /// This API used for testing
+        /// </remarks>
+        /// <response code="200">User created succesfully</response>
         [HttpGet]
         public async Task<IActionResult> CreateRandomUser()
         {
@@ -59,6 +70,10 @@ namespace WebApi.Controllers
             return BadRequest();
         }
 
+        /// <summary>
+        /// Revoke user. User will be sign out from all devices.
+        /// </summary>
+        /// <response code="200">Tokens are unregister</response>
         [HttpPost]
         public async Task<IActionResult> RevokeUser([FromBody] Guid userId)
         {
