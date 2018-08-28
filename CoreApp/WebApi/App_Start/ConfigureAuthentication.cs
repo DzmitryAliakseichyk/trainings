@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using WebApi.Authentication;
+using WebApi.Authentication.Models;
+using WebApi.Extensions;
 
 namespace WebApi
 {
@@ -46,6 +48,8 @@ namespace WebApi
                 options.AddPolicy("AdministratorOnly", policy => policy.RequireRole(
                     AppRoleEnum.Administrator.ToString(),
                     AppRoleEnum.SuperAdministrator.ToString())));
+
+            services.AddSingleton<IAuthorizationHandler, JwtRegistrationHandler>();
         }
     }
 }

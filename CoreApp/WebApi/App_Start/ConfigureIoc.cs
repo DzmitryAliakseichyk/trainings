@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using WebApi.Authentication;
+using WebApi.Authentication.Generators;
+using WebApi.Authentication.Helpers;
 
 namespace WebApi
 {
@@ -13,6 +15,7 @@ namespace WebApi
         internal static void Configure(IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddTransient<IJwtTokenHelper, JwtTokenHelper>();
             services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
             services.AddSingleton<IPasswordGenerator, PasswordGenerator>();
 

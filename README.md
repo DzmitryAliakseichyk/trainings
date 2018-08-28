@@ -57,6 +57,15 @@ Here will be placed results of understanding new features and improvements of .N
     [readWrite role (MongoDB 4.0 documentation)](https://docs.mongodb.com/manual/reference/built-in-roles/#readWrite)
 
 
+## Background tasks
+    We figured out the app would need to run scheduled background tasks like Db maintenence, sending emails, etc.
+    asp.net core 2.0  provides a IHostedService 
+    We implement several approches of task scheduling:
+    1. Dispatcher (SchedulerHostedService) for managing scheduled tasks (IScheduledTask).
+    2. Job that inherits BaseScheduledHostedService
+
+[Implement background tasks in microservices with IHostedService and the BackgroundService class](https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/multi-container-microservice-net-applications/background-tasks-with-ihostedservic)
+
 ## Setup Elastic search
 
 We will use docker image for development needs.
@@ -64,10 +73,10 @@ Provided steps below are described on https://www.elastic.co/guide/en/elasticsea
 1. Install docker
 2. Switch docker to use linux container
 3. Get container from docker
-    ```
-    docker pull docker.elastic.co/elasticsearch/elasticsearch:6.3.2
-    ```
+```
+docker pull docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+```
 4. run container
-    ```
-    docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2
-    ```
+```
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+```

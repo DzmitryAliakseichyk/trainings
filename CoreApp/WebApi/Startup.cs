@@ -37,6 +37,8 @@ namespace WebApi
 
             ConfigureIoc.Configure(services, _configuration);
             
+            ConfigeScheduledTasks.Configure(services, _configuration, _loggerFactory);
+            
             services.AddMvc(options =>
                 {
                     options.OutputFormatters.RemoveType<TextOutputFormatter>();

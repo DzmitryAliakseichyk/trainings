@@ -7,10 +7,10 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using WebApi.Models;
+using WebApi.Authentication.Models;
 using WebApi.Models.Settings;
 
-namespace WebApi.Authentication
+namespace WebApi.Authentication.Generators
 {
     public class JwtTokenGenerator : IJwtTokenGenerator
     {
@@ -50,11 +50,6 @@ namespace WebApi.Authentication
             );
             
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public string GetTokenSignature(string jwtToken)
-        {
-            return new JwtSecurityTokenHandler().ReadJwtToken(jwtToken).RawSignature;
         }
     }
 }
