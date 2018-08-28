@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Authentication;
+using WebApi.Authentication.Models;
 
 namespace WebApi
 {
@@ -46,7 +47,8 @@ namespace WebApi
                     {
                         superAdmin = new AppUser
                         {
-                            UserName = configuration["SuperAdmin:Name"]
+                            UserName = configuration["SuperAdmin:Name"],
+                            Email = configuration["SuperAdmin:Email"]
                         };
 
                         var result = await userManager.CreateAsync(superAdmin, configuration["SuperAdmin:Password"]);

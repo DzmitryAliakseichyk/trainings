@@ -1,6 +1,6 @@
-﻿using WebApi.Models;
+﻿using WebApi.Authentication.Models;
 
-namespace WebApi.Authentication
+namespace WebApi.Authentication.Generators
 {
     public interface IJwtTokenGenerator
     {

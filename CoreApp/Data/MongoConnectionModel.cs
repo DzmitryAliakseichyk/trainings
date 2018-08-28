@@ -1,4 +1,4 @@
-﻿namespace WebApi.Models
+﻿namespace Data
 {
     public class MongoConnectionModel
     {

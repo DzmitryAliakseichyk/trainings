@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Data;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebApi.Models;
 using WebApi.Models.Settings;
@@ -22,8 +23,6 @@ namespace WebApi
                 options.Audience = configuration.GetSection("Jwt:Audience").Value;
                 options.ExpitarionsOffsetInMinutes = int.TryParse(configuration.GetSection("Jwt:ExpitarionsOffsetInMinutes").Value, out var expiration) ? expiration : 0;
             });
-
-
         }
     }
 }

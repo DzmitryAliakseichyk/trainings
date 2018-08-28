@@ -32,11 +32,13 @@ namespace WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             ConfigureAuthentication.Configure(services, _configuration);
-
-            ConfigureIoc.Configure(services);
-
+            
             ConfigureSettings.Configure(services, _configuration);
 
+            ConfigureIoc.Configure(services, _configuration);
+            
+            ConfigeScheduledTasks.Configure(services, _configuration, _loggerFactory);
+            
             services.AddMvc(options =>
                 {
                     options.OutputFormatters.RemoveType<TextOutputFormatter>();
