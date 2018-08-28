@@ -49,20 +49,23 @@ namespace WebApi
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            // https://github.com/domaindrivendev/Swashbuckle.AspNetCore
-            services.AddSwaggerGen(c =>
+            if (_env.IsDevelopment())
             {
-                c.SwaggerDoc("v1", new Info
+                // Register the Swagger generator, defining 1 or more Swagger documents
+                // https://github.com/domaindrivendev/Swashbuckle.AspNetCore
+                services.AddSwaggerGen(c =>
                 {
-                    Version = "v1",
-                    Title = "CoreApp API"
-                });
+                    c.SwaggerDoc("v1", new Info
+                    {
+                        Version = "v1",
+                        Title = "CoreApp API"
+                    });
 
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
-            });
+                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                    c.IncludeXmlComments(xmlPath);
+                });
+            }
         }
 
 
@@ -74,6 +77,16 @@ namespace WebApi
             if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                // Enable middleware to serve generated Swagger as a JSON endpoint.
+                app.UseSwagger();
+
+                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
+                // specifying the Swagger JSON endpoint.
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreApp API V1");
+                });
             }
 
             if (_env.IsProduction() || _env.IsStaging())
@@ -88,16 +101,6 @@ namespace WebApi
             app.UseAuthentication();
 
             UserDatabaseInitializer.Initialize(app);
-
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreApp API V1");
-            });
 
             app.UseMvc();
         }
