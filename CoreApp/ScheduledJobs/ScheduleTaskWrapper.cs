@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NCrontab;
 
-namespace WebApi.Jobs
+namespace ScheduledJobs
 {
     internal class ScheduleTaskWrapper
     {
@@ -13,13 +13,15 @@ namespace WebApi.Jobs
 
         private DateTime _nextRunTime;
 
-        private IScheduledTask _task { get; }
+        public Task CurrenTask { get; set; } = null;
+
+        private IScheduledTask Task { get; }
 
         public ScheduleTaskWrapper(IScheduledTask task)
         {
-            _task = task;
-            _schedule = CrontabSchedule.Parse(_task.Cron);
-            _nextRunTime = _schedule.GetNextOccurrence(DateTime.UtcNow);
+            Task = task;
+            _schedule = CrontabSchedule.Parse(Task.Cron);
+            _nextRunTime = _schedule.GetNextOccurrence(DateTime.Now);
         }
 
         public void SetNextRunTime()
@@ -30,10 +32,9 @@ namespace WebApi.Jobs
 
         public Task RunTask(CancellationToken cancelationToken)
         {
-            return _task.ExecuteAsync(cancelationToken);
+            return Task.ExecuteAsync(cancelationToken);
         }
-
-
+        
         public bool ShouldRun(DateTime currentTime)
         {
             return _nextRunTime < currentTime && _lastRunTime != _nextRunTime;

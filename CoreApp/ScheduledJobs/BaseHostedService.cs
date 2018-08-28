@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 
-namespace WebApi.Jobs
+namespace ScheduledJobs
 {
         /// <summary>
         /// https://gist.github.com/davidfowl/a7dd5064d9dcf35b6eae1a7953d615e3
