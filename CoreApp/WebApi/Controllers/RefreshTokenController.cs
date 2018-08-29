@@ -38,7 +38,15 @@ namespace WebApi.Controllers
             _jwtTokenHelper = jwtTokenHelper;
         }
 
+        /// <summary>
+        /// Get new access Token
+        /// </summary>
+        /// <response code="200">Tokens are generated and registered</response>
+        /// <response code="404">Invalid refresh token</response>
+        /// <response code="404">User not found</response>
+        /// <response code="500">Internal error (tokens are not generated or registered)</response>
         [HttpGet("{refreshToken}")]
+        [ProducesResponseType(typeof(JwtTokenViewModel), 200)]
         public async Task<IActionResult> RefreshAccessToken(Guid refreshToken)
         {
             var refreshTokenObject = await _tokenProvider.GetRefreshToken(refreshToken);
@@ -54,6 +62,8 @@ namespace WebApi.Controllers
             {
                 return BadRequest();
             }
+
+            //todo: check is user locked
 
             var token = new JwtTokenViewModel
             {
