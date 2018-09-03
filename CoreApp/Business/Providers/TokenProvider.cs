@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Common.Models;
 using Data.Repositories;
 
@@ -9,7 +8,6 @@ namespace Business.Providers
     public class TokenProvider : ITokenProvider
     {
         private const int RefreshTokenLifeTime = 2;
-        private const int AccessTokenLifeTime = 15;
 
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
@@ -22,9 +20,9 @@ namespace Business.Providers
             _accessTokenRepository = accessTokenRepository;
         }
 
-        public async Task RegisterRefreshToken(string refreshToken, Guid userId)
+        public void RegisterRefreshToken(string refreshToken, Guid userId)
         {
-            await _refreshTokenRepository.Create(new RefreshToken
+            _refreshTokenRepository.Create(new RefreshToken
             {
                 Id = Guid.Parse(refreshToken),
                 UserId = userId,
@@ -32,9 +30,9 @@ namespace Business.Providers
             });
         }
 
-        public async Task RegisterAccessToken(string signature, DateTimeOffset expirationDate, Guid userId)
+        public void RegisterAccessToken(string signature, DateTimeOffset expirationDate, Guid userId)
         {
-            await _accessTokenRepository.Create(new AccessToken
+            _accessTokenRepository.Create(new AccessToken
             {
                 TokenSignature = signature,
                 UserId = userId,
@@ -42,22 +40,22 @@ namespace Business.Providers
             });
         }
         
-        public async Task<RefreshToken> GetRefreshToken(Guid refreshToken)
+        public RefreshToken GetRefreshToken(Guid refreshToken)
         {
-            var token = await _refreshTokenRepository.Get(refreshToken);
+            var token = _refreshTokenRepository.Get(refreshToken);
             return token;
         }
 
-        public Task<bool> IsAccessTokenRegistered(string accessToken)
+        public bool IsAccessTokenRegistered(string accessToken)
         {
             return _accessTokenRepository.CheckIfExist(x => x.TokenSignature.Equals(accessToken));
         }
 
-        public async Task UpdateRefreshToken(Guid refreshToken)
+        public void UpdateRefreshToken(Guid refreshToken)
         {
-            var token = await _refreshTokenRepository.Get(refreshToken);
+            var token = _refreshTokenRepository.Get(refreshToken);
 
-            await _refreshTokenRepository.Update(new RefreshToken
+            _refreshTokenRepository.Update(new RefreshToken
             {
                 Id = token.Id,
                 UserId = token.UserId,
@@ -67,34 +65,33 @@ namespace Business.Providers
 
         #region Delete
 
-        public async Task DeleteRefreshToken(Expression<Func<RefreshToken, bool>> condition)
+        public void DeleteRefreshToken(Expression<Func<RefreshToken, bool>> condition)
         {
-            await _refreshTokenRepository.Delete(condition);
+            _refreshTokenRepository.Delete(condition);
         }
 
-        public async Task DeleteRefreshTokenById(Guid refreshToken)
+        public void DeleteRefreshTokenById(Guid refreshToken)
         {
-            await _refreshTokenRepository.Delete(refreshToken);
+            _refreshTokenRepository.Delete(refreshToken);
         }
 
-        public async Task DeleteRefreshTokensByUserId(Guid userId)
+        public void DeleteRefreshTokensByUserId(Guid userId)
         {
-            await _refreshTokenRepository.Delete(x => x.UserId == userId);
+            _refreshTokenRepository.Delete(x => x.UserId == userId);
         }
 
-        public async Task DeleteAccessToken(Expression<Func<AccessToken, bool>> condition)
+        public void DeleteAccessToken(Expression<Func<AccessToken, bool>> condition)
         {
-            await _accessTokenRepository.Delete(condition);
+            _accessTokenRepository.Delete(condition);
         }
 
-        public async Task DeleteAccessToken(string accessToken)
+        public void DeleteAccessToken(string accessToken)
         {
-            await _accessTokenRepository.Delete(x => x.TokenSignature.Equals(accessToken));
         }
 
-        public async Task DeleteAccessTokenByUserId(Guid userId)
+        public void DeleteAccessTokenByUserId(Guid userId)
         {
-            await _accessTokenRepository.Delete(x => x.UserId == userId);
+            _accessTokenRepository.Delete(x => x.UserId == userId);
         }
 
         #endregion
