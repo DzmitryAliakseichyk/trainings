@@ -28,10 +28,12 @@ namespace WebApi.Jobs
 
         protected override ILogger Logger { get; }
 
-        protected override async Task Process()
+        protected override Task Process()
         {
             Logger.LogInformation($"{nameof(AccessTokenCleanupJob)} start process at {LastRun}");
-            await _tokenProvider.DeleteAccessToken(x => DateTimeOffset.Now > x.ExpirationDate);
+            _tokenProvider.DeleteAccessToken(x => DateTimeOffset.Now > x.ExpirationDate);
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,21 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Business.Providers;
-using Common.Models;
-using Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Authentication;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Helpers;
 using WebApi.Authentication.Models;
-using WebApi.Models;
 using WebApi.ViewModels;
 
 namespace WebApi.Controllers
@@ -31,9 +23,6 @@ namespace WebApi.Controllers
         private readonly UserManager<AppUser> _userManager;
 
         private readonly SignInManager<AppUser> _signInManager;
-
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
-
         private readonly ITokenProvider _tokenProvider;
 
         private readonly IJwtTokenHelper _jwtTokenHelper;
@@ -42,14 +31,12 @@ namespace WebApi.Controllers
             IRefreshTokenGenerator refreshTokenGenerator,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager, 
-            IRefreshTokenRepository refreshTokenRepository, 
             ITokenProvider tokenProvider, 
             IJwtTokenHelper jwtTokenHelper)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _userManager = userManager;
             _signInManager = signInManager;
-            _refreshTokenRepository = refreshTokenRepository;
             _tokenProvider = tokenProvider;
             _jwtTokenHelper = jwtTokenHelper;
             _refreshTokenGenerator = refreshTokenGenerator;
@@ -83,8 +70,8 @@ namespace WebApi.Controllers
 
                 try
                 {
-                    await _tokenProvider.RegisterRefreshToken(token.RefreshToken, user.Id);
-                    await _tokenProvider.RegisterAccessToken(
+                    _tokenProvider.RegisterRefreshToken(token.RefreshToken, user.Id);
+                    _tokenProvider.RegisterAccessToken(
                         _jwtTokenHelper.GetSignature(token.AccessToken),
                         _jwtTokenHelper.GetExpirationDate(token.AccessToken),
                         user.Id);
@@ -112,14 +99,14 @@ namespace WebApi.Controllers
         /// <response code="500">Internal error (tokens are not unregister)</response>
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> SignOut([FromBody] SignOutViewModel signOutViewModel)
+        public IActionResult SignOut([FromBody] SignOutViewModel signOutViewModel)
         {
             //todo: check is user exist
 
             try
             {
-                await _tokenProvider.DeleteRefreshTokenById(signOutViewModel.RefreshToken);
-                await _tokenProvider.DeleteAccessToken(signOutViewModel.AccessTokenSignature);
+                _tokenProvider.DeleteRefreshTokenById(signOutViewModel.RefreshToken);
+                _tokenProvider.DeleteAccessToken(signOutViewModel.AccessTokenSignature);
             }
             catch (Exception)
             {

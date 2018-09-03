@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Common.Models;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
@@ -45,11 +43,11 @@ namespace Data.Repositories
             Db = mongoWrapper.Database;
         }
 
-        public virtual async Task<T> Create(T token)
+        public virtual T Create(T token)
         {
             try
             {
-                await MongoCollection.InsertOneAsync(token);
+                MongoCollection.InsertOne(token);
             }
             catch (Exception exception)
             {
@@ -60,23 +58,17 @@ namespace Data.Repositories
             return token;
         }
 
-        public virtual async Task<T> Get(Expression<Func<T, bool>> condition)
+        public virtual T Get(Guid id)
         {
-            var token = default(T);
+            return Get(x => x.Id == id);
+        }
+
+        public virtual T Get(Expression<Func<T, bool>> condition)
+        {
+            T token;
             try
             {
-                using (var cursor = await MongoCollection.FindAsync(condition))
-                {
-                    while (await cursor.MoveNextAsync())
-                    {
-                        var batch = cursor.Current;
-                        foreach (var document in batch)
-                        {
-                            token = document;
-                            break;
-                        }
-                    }
-                }
+                token = MongoCollection.Find(condition).SingleOrDefault();
             }
             catch (Exception exception)
             {
@@ -87,16 +79,12 @@ namespace Data.Repositories
             return token;
         }
 
-        public virtual async Task<T> Get(Guid id)
-        {
-            return await Get(x => x.Id == id);
-        }
 
-        public virtual async Task<bool> CheckIfExist(Expression<Func<T, bool>> condition)
+        public virtual bool CheckIfExist(Expression<Func<T, bool>> condition)
         {
             try
             {
-                return await MongoCollection.Find(condition).CountDocumentsAsync() > 0;
+                return MongoCollection.Find(condition).CountDocuments() > 0;
             }
             catch (Exception exception)
             {
@@ -105,11 +93,11 @@ namespace Data.Repositories
             }
         }
 
-        public virtual async Task<T> Update(T token)
+        public virtual T Update(T token)
         {
             try
             {
-                var result = await MongoCollection.ReplaceOneAsync(
+                MongoCollection.ReplaceOne(
                     f => f.Id == token.Id,
                     token);
             }
@@ -122,11 +110,11 @@ namespace Data.Repositories
             return token;
         }
 
-        public virtual async Task Delete(Expression<Func<T, bool>> condition)
+        public virtual void Delete(Expression<Func<T, bool>> condition)
         {
             try
             {
-                await MongoCollection.DeleteManyAsync<T>(condition);
+                MongoCollection.DeleteMany<T>(condition);
             }
             catch (Exception exception)
             {
@@ -135,9 +123,9 @@ namespace Data.Repositories
             }
         }
 
-        public virtual async Task Delete(Guid id)
+        public virtual void Delete(Guid id)
         {
-            await Delete(x => x.Id == id);
+            Delete(x => x.Id == id);
         }
     }
 }

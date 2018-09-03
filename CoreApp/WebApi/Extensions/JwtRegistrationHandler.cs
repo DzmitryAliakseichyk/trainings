@@ -27,7 +27,7 @@ namespace WebApi.Extensions
             _logger = logger;
         }
         
-        public async Task HandleAsync(AuthorizationHandlerContext context)
+        public Task HandleAsync(AuthorizationHandlerContext context)
         {
             var httpContext = _contextAccessor.HttpContext;
             var authHeader = httpContext.Request.Headers["Authorization"].ToString();
@@ -38,7 +38,7 @@ namespace WebApi.Extensions
                 try
                 {
                     var signature = _jwtTokenHelper.GetSignature(tokenStr);
-                    var isRegistered = await _tokenProvider.IsAccessTokenRegistered(signature);
+                    var isRegistered = _tokenProvider.IsAccessTokenRegistered(signature);
                     if (!isRegistered)
                     {
                         context.Fail();
@@ -50,6 +50,8 @@ namespace WebApi.Extensions
                     context.Fail();
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }
