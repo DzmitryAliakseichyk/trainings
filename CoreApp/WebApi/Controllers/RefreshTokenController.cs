@@ -49,7 +49,7 @@ namespace WebApi.Controllers
         [ProducesResponseType(typeof(JwtTokenViewModel), 200)]
         public async Task<IActionResult> RefreshAccessToken(Guid refreshToken)
         {
-            var refreshTokenObject = await _tokenProvider.GetRefreshToken(refreshToken);
+            var refreshTokenObject = _tokenProvider.GetRefreshToken(refreshToken);
 
             if (refreshTokenObject == null)
             {
@@ -73,9 +73,9 @@ namespace WebApi.Controllers
 
             try
             {
-                await _tokenProvider.UpdateRefreshToken(refreshToken);
+                _tokenProvider.UpdateRefreshToken(refreshToken);
 
-                await _tokenProvider.RegisterAccessToken(
+                _tokenProvider.RegisterAccessToken(
                     _jwtTokenHelper.GetSignature(token.AccessToken),
                     _jwtTokenHelper.GetExpirationDate(token.AccessToken),
                     user.Id);
