@@ -8,16 +8,34 @@ using MongoDB.Driver;
 
 namespace Data.Repositories
 {
-    public abstract class Repository<T> : IRepository<T> where T : BaseModel
+    public abstract class Repository<T> : BaseRepository, IRepository<T> where T : BaseModel
     {
-        private readonly Lazy<IMongoCollection<T>> _mongoCollectionInstance;
-
-        protected readonly ILogger<Repository<T>> Logger;
-        protected readonly IMongoDatabase Db;
-
         protected abstract string CollectionName { get; }
 
-        protected IMongoCollection<T> MongoCollection => _mongoCollectionInstance.Value;
+        protected readonly ILogger<Repository<T>> Logger;
+
+        private readonly object _collectionLock = new object();
+
+        private IMongoCollection<T> _mongoCollection;
+
+        protected IMongoCollection<T> MongoCollection
+        {
+            get
+            {
+                if (_mongoCollection == null)
+                {
+                    lock (_collectionLock)
+                    {
+                        if (_mongoCollection == null)
+                        {
+                            _mongoCollection = Db.GetCollection<T>(CollectionName);
+                        }
+                    }
+                }
+
+                return _mongoCollection;
+            }
+        }
 
         protected Repository(
             IMongoWrapper mongoWrapper,
@@ -25,7 +43,6 @@ namespace Data.Repositories
         {
             Logger = logger;
             Db = mongoWrapper.Database;
-            _mongoCollectionInstance = new Lazy<IMongoCollection<T>>(() => Db.GetCollection<T>(CollectionName));
         }
 
         public virtual async Task<T> Create(T token)

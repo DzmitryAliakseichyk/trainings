@@ -20,8 +20,8 @@ namespace WebApi
             services.AddSingleton<IPasswordGenerator, PasswordGenerator>();
 
             services.AddSingleton<IMongoWrapper, MongoWrapper>();
-            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddTransient<IAccessTokenRepository, AccessTokenRepository>();
+            services.AddSingleton<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddSingleton<IAccessTokenRepository, AccessTokenRepository>();
             services.AddTransient<ITokenProvider, TokenProvider>();
         }
     }
