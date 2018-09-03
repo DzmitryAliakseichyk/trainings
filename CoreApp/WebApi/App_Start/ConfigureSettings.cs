@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Azure.Models.Settings;
+using Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebApi.Models;
@@ -10,10 +11,11 @@ namespace WebApi
     {
         internal static void Configure(IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<MongoConnectionModel>(options =>
+            services.Configure<AzureCognitiveServices>(options =>
             {
-                options.ConnectionString = configuration.GetSection("MongoConnection:ConnectionString").Value;
-                options.Database = configuration.GetSection("MongoConnection:Database").Value;
+                options.EndPoint = configuration.GetSection("Azure:CognitiveServices:Language:EndPoint").Value;
+                options.SubscriptionKeyName = configuration.GetSection("Azure:CognitiveServices:Language:SubscriptionKeyName").Value;
+                options.SubscriptionKey = configuration.GetSection("Azure:CognitiveServices:Language:SubscriptionKey").Value;
             });
 
             services.Configure<JwtSettingsModel>(options =>
@@ -23,6 +25,13 @@ namespace WebApi
                 options.Audience = configuration.GetSection("Jwt:Audience").Value;
                 options.ExpitarionsOffsetInMinutes = int.TryParse(configuration.GetSection("Jwt:ExpitarionsOffsetInMinutes").Value, out var expiration) ? expiration : 0;
             });
+
+            services.Configure<MongoConnectionModel>(options =>
+            {
+                options.ConnectionString = configuration.GetSection("MongoConnection:ConnectionString").Value;
+                options.Database = configuration.GetSection("MongoConnection:Database").Value;
+            });
+
         }
     }
 }

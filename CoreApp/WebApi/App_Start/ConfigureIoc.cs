@@ -1,4 +1,6 @@
-﻿using Business.Providers;
+﻿using Azure;
+using Business.Interfaces;
+using Business.Providers;
 using Data;
 using Data.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +25,8 @@ namespace WebApi
             services.AddSingleton<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddSingleton<IAccessTokenRepository, AccessTokenRepository>();
             services.AddTransient<ITokenProvider, TokenProvider>();
+
+            services.AddTransient<ITextAnalyticsService, TextAnalyticsService>();
         }
     }
 }

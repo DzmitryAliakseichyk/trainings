@@ -2,7 +2,7 @@
 
 namespace Business.Models.KeyPhrases
 {
-    public class KeyPhrasesRequestDocuments
+    public class KeyPhrasesRequestDocument
     {
         public string Id { get; set; } = Guid.NewGuid().ToString("N");
 

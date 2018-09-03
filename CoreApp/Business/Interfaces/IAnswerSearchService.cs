@@ -2,7 +2,7 @@
 
 namespace Business.Interfaces
 {
-    public interface IAnswerSearchProvider
+    public interface IAnswerSearchService
     {
         void AddAnswer(QuestionAnswerModel questionAnswerModel);
     }

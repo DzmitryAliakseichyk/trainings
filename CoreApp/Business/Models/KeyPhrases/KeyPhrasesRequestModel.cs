@@ -4,6 +4,6 @@ namespace Business.Models.KeyPhrases
 {
     public class KeyPhrasesRequestModel
     {
-        public List<KeyPhrasesRequestDocuments> Documents { get; set; }
+        public List<KeyPhrasesRequestDocument> Documents { get; set; } = new List<KeyPhrasesRequestDocument>();
     }
 }
