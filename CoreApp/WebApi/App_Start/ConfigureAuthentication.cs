@@ -16,7 +16,7 @@ namespace WebApi
         internal static void Configure(IServiceCollection services, IConfiguration configuration)
         {
             services
-                .AddIdentity<AppUser, AppRole>()
+                .AddIdentity<AppUser, AppRole>(options => { options.SignIn.RequireConfirmedEmail = true; })
                 .AddMongoDbStores<AppUser, AppRole, Guid>(
                     configuration.GetSection("MongoConnection:ConnectionString").Value, 
                     configuration.GetSection("MongoConnection:Database").Value

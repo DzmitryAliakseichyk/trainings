@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Business.Providers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Models;
@@ -18,14 +21,19 @@ namespace WebApi.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IPasswordGenerator _passwordGenerator;
         private readonly ITokenProvider _tokenProvider;
+        private readonly IEmailSender _emailSender;
 
-        public UserManagerController(UserManager<AppUser> userManager,
+        public UserManagerController(
+            UserManager<AppUser> userManager,
             IPasswordGenerator passwordGenerator, 
-            ITokenProvider tokenProvider)
+            ITokenProvider tokenProvider, 
+            IEmailSender emailSender
+            )
         {
             _userManager = userManager;
             _passwordGenerator = passwordGenerator;
             _tokenProvider = tokenProvider;
+            _emailSender = emailSender;
         }
 
         /// <summary>
@@ -40,6 +48,16 @@ namespace WebApi.Controllers
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callbackUrl = Url.Action(
+                    "ConfirmEmail", 
+                    "Account",
+                    values: new { userId = user.Id, code },
+                    protocol: Request.Scheme);
+
+                await _emailSender.SendEmailAsync(user.Email, "Confirm your email",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                
                 //todo: return created user
                 return Ok();
             }
