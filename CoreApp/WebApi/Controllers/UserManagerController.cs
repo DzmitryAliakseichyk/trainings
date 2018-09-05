@@ -113,7 +113,7 @@ namespace WebApi.Controllers
 
                 //todo: move email message to config
                 await _emailSender.SendEmailAsync(user.Email, "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>. Your password is {password}");
                 
                 //todo: return valid Uri
                 return Created(String.Empty, _mapper.Map(user));
