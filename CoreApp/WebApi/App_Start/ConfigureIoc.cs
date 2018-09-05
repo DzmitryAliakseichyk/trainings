@@ -10,6 +10,7 @@ using WebApi.Authentication;
 using WebApi.Authentication.Email;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Helpers;
+using WebApi.Mappers;
 
 namespace WebApi
 {
@@ -29,6 +30,8 @@ namespace WebApi
             services.AddSingleton<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddSingleton<IAccessTokenRepository, AccessTokenRepository>();
             services.AddTransient<ITokenProvider, TokenProvider>();
+
+            services.AddSingleton<IUserMapper, UserMapper>();
 
             if (env.IsDevelopment())
             {

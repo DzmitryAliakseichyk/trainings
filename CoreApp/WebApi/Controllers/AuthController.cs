@@ -57,7 +57,7 @@ namespace WebApi.Controllers
             var user = await _userManager.FindByEmailAsync(loginViewModel.Email);
             if (user == null)
             {
-                return new NotFoundResult();
+                return NotFound();
             }
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginViewModel.Password, false);
             if (result.Succeeded)
@@ -78,18 +78,18 @@ namespace WebApi.Controllers
                 }
                 catch (Exception)
                 {
-                    return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
                 
-                return new OkObjectResult(token);
+                return Ok(token);
             }
 
             if (result.IsLockedOut || result.IsNotAllowed)
             {
-                return new ForbidResult();
+                return Forbid();
             }
 
-            return new ForbidResult();
+            return Forbid();
         }
 
         /// <summary>
@@ -108,11 +108,11 @@ namespace WebApi.Controllers
                 _tokenProvider.DeleteRefreshTokenById(signOutViewModel.RefreshToken);
                 _tokenProvider.DeleteAccessToken(signOutViewModel.AccessTokenSignature);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+                return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
             }
-            return new OkResult();
+            return Ok();
         }
     }
 }

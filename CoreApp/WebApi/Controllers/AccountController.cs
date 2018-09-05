@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -36,17 +37,19 @@ namespace WebApi.Controllers
                 return BadRequest();
             }
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
             {
-                return BadRequest();
+                return NotFound();
             }
             var result = await _userManager.ConfirmEmailAsync(user, code);
+
             if (result.Succeeded)
             {
                 return Ok();
             }
 
-            return BadRequest();
+            return StatusCode((int)HttpStatusCode.InternalServerError, result.Errors);
         }
     }
 }
