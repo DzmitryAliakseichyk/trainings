@@ -6,8 +6,6 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Business.Providers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -105,18 +103,16 @@ namespace WebApi.Controllers
             if (result.Succeeded)
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var callbackUrl = Url.Action(
-                    "ConfirmEmail", 
-                    "Account",
-                    values: new { userId = user.Id, token },
-                    protocol: Request.Scheme);
+
+                //todo: generate url link to ui route, that will handle email confirmation
+                var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={user.Email}&token={token}";
 
                 //todo: move email message to config
                 await _emailSender.SendEmailAsync(user.Email, "Confirm your email",
                     $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>. Your password is {password}");
                 
                 //todo: return valid Uri
-                return Created(String.Empty, _mapper.Map(user));
+                return Created(string.Empty, _mapper.Map(user));
             }
 
             return StatusCode((int)HttpStatusCode.InternalServerError, result.Errors);

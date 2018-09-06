@@ -46,7 +46,9 @@ namespace WebApi.Controllers
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = Url.Action("ResetPassword", "RestorePassword", new { userId = user.Id, token }, protocol: HttpContext.Request.Scheme);
+
+            //todo: generate url to ui that will handle reset password
+            var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={user.Email}&token={token}";
 
             //todo: move email text and subject to config
             await _emailSender.SendEmailAsync(model.Email, "Reset Password",
@@ -60,22 +62,17 @@ namespace WebApi.Controllers
         /// <response code="200">Email was sent</response>
         /// <response code="400">UserId or code is null</response>
         /// <response code="404">User not found</response>
-        [HttpGet]
-        public async Task<IActionResult> ResetPassword(string userId, string token)
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
         {
-            if (userId == null || token == null)
-            {
-                return BadRequest();
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 return NotFound();
             }
 
             var password = _passwordGenerator.Generate();
-            var result = await _userManager.ResetPasswordAsync(user, token, password);
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, password);
             if (result.Succeeded)
             {
                 //todo: move email text and subject to config

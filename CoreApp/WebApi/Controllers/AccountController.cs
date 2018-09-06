@@ -2,6 +2,7 @@
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Business.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Models;
+using WebApi.Extensions;
 using WebApi.ViewModels;
 
 namespace WebApi.Controllers
@@ -20,39 +22,38 @@ namespace WebApi.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly IPasswordGenerator _passwordGenerator;
+        private readonly ITokenProvider _tokenProvider;
 
         public AccountController(
             UserManager<AppUser> userManager, 
             IEmailSender emailSender, 
-            IPasswordGenerator passwordGenerator
+            IPasswordGenerator passwordGenerator, 
+            ITokenProvider tokenProvider
             )
         {
             _userManager = userManager;
             _emailSender = emailSender;
             _passwordGenerator = passwordGenerator;
+            _tokenProvider = tokenProvider;
         }
 
         /// <summary>
         /// Confirm user email
         /// </summary>
         /// <response code="200">User email confirmed</response>
-        /// <response code="400">UserId or code is null</response>
+        /// <response code="400">Input parameters are wrong</response>
         /// <response code="404">User not found</response>
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        public async Task<IActionResult> ConfirmEmail([FromBody] EmailConfirmationViewModel model)
         {
-            if (userId == null || token == null)
-            {
-                return BadRequest();
-            }
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByEmailAsync(model.Email);
 
             if (user == null)
             {
                 return NotFound();
             }
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            var result = await _userManager.ConfirmEmailAsync(user, model.Token);
 
             if (result.Succeeded)
             {
@@ -69,14 +70,14 @@ namespace WebApi.Controllers
         /// Send confirmation to new user email
         /// </summary>
         /// <response code="200">Send confirmation email</response>
-        /// <response code="400">UserId or code is null</response>
+        /// <response code="400">Input parameters are wrong</response>
         /// <response code="403">Current user is not equals to updated user</response>
         /// <response code="404">User not found</response>
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailViewModel viewModel)
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailViewModel model)
         {
-            var userId = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Sid))?.Value;
+            var userId = User.GetUserId();
 
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -90,72 +91,31 @@ namespace WebApi.Controllers
                 return NotFound();
             }
 
-            var token = await _userManager.GenerateChangeEmailTokenAsync(user, viewModel.NewEmail);
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, model.NewEmail);
 
-            //todo: generate route
-            var callbackUrl = Url.Action("UpdateNewEmail", "Account", new { userId = user.Id, token, newEmail = viewModel.NewEmail }, protocol: HttpContext.Request.Scheme);
+            //todo: generate url link to ui route, that will handle email changing
+             var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={model.NewEmail}&token={token}";
 
             //todo: move email text and subject to config
-            await _emailSender.SendEmailAsync(viewModel.NewEmail, "Update Email",
+            await _emailSender.SendEmailAsync(model.NewEmail, "Update Email",
                 $"Please confirm your new email by clicking here: <a href=\"{callbackUrl}\">link</a>");
 
             return Ok();
         }
 
-        //todo: make it authorize
         /// <summary>
         /// Update user email
         /// </summary>
         /// <response code="200">User email updated</response>
-        /// <response code="400">UserId or code is null</response>
+        /// <response code="400">Input parameters are wrong</response>
         /// <response code="404">User not found</response>
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateNewEmail(string userId, string token, string newEmail)
-        {
-            if (userId == null || token == null)
-            {
-                return BadRequest();
-            }
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-            var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
-
-            if (result.Succeeded)
-            {
-                //todo: move email text and subject to config
-                await _emailSender.SendEmailAsync(user.Email, "Email was updated",
-                    "Your email was updated");
-                //todo: logout
-                return Ok();
-            }
-
-            return StatusCode((int)HttpStatusCode.InternalServerError, result.Errors);
-        }
-
-        /// <summary>
-        /// Change user's password
-        /// </summary>
-        /// <response code="200">User email confirmed</response>
-        /// <response code="400">UserId or code is null</response>
-        /// <response code="404">User not found</response>
-        [HttpPatch("{userId}")]
+        [HttpPost]
         [Authorize]
-        public async Task<IActionResult> ChangePassword(string userId,
-            [FromBody] ChangePasswordViewModel viewModel)
+        public async Task<IActionResult> UpdateNewEmail([FromBody] EmailConfirmationViewModel model)
         {
-            if (userId == null)
-            {
-                return BadRequest();
-            }
+            var userId = User.GetUserId();
 
-            var currentUserId = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Sid))?.Value;
-
-            if (string.IsNullOrWhiteSpace(currentUserId) || !currentUserId.Equals(userId))
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return Forbid();
             }
@@ -166,7 +126,47 @@ namespace WebApi.Controllers
             {
                 return NotFound();
             }
+            var result = await _userManager.ChangeEmailAsync(user, model.Email, model.Token);
 
+            if (result.Succeeded)
+            {
+                //todo: move email text and subject to config
+                await _emailSender.SendEmailAsync(user.Email, "Email was updated",
+                    "Your email was updated");
+                
+                _tokenProvider.DeleteAccessTokenByUserId(user.Id);
+                _tokenProvider.DeleteRefreshTokensByUserId(user.Id);
+
+                return Ok();
+            }
+
+            return StatusCode((int)HttpStatusCode.InternalServerError, result.Errors);
+        }
+
+        /// <summary>
+        /// Change user password
+        /// </summary>
+        /// <response code="200">User email confirmed</response>
+        /// <response code="404">User not found</response>
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordViewModel viewModel)
+        {
+            var userId = User.GetUserId();
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Forbid();
+            }
+            
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+            
+            //todo: validate new password
             var result = await _userManager.ChangePasswordAsync(user, viewModel.CurrentPassword, viewModel.NewPassword);
 
             if (result.Succeeded)
@@ -178,7 +178,6 @@ namespace WebApi.Controllers
                 return Ok();
             }
 
-            //todo: check if password is weak and etc.
             return StatusCode((int)HttpStatusCode.InternalServerError, result.Errors);
         }
     }

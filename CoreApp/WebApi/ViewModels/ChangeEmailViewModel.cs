@@ -5,8 +5,7 @@ namespace WebApi.ViewModels
     public class ChangeEmailViewModel
     {
         [Required]
-        public string UserId { get; set; }
-        [Required]
+        [EmailAddress]
         public string NewEmail { get; set; }
     }
 }
