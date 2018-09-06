@@ -45,8 +45,8 @@ namespace WebApi.Controllers
                 return NotFound();
             }
 
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = Url.Action("ResetPassword", "RestorePassword", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = Url.Action("ResetPassword", "RestorePassword", new { userId = user.Id, token }, protocol: HttpContext.Request.Scheme);
 
             //todo: move email text and subject to config
             await _emailSender.SendEmailAsync(model.Email, "Reset Password",
@@ -61,9 +61,9 @@ namespace WebApi.Controllers
         /// <response code="400">UserId or code is null</response>
         /// <response code="404">User not found</response>
         [HttpGet]
-        public async Task<IActionResult> ResetPassword(string userId, string code)
+        public async Task<IActionResult> ResetPassword(string userId, string token)
         {
-            if (userId == null || code == null)
+            if (userId == null || token == null)
             {
                 return BadRequest();
             }
@@ -75,7 +75,7 @@ namespace WebApi.Controllers
             }
 
             var password = _passwordGenerator.Generate();
-            var result = await _userManager.ResetPasswordAsync(user, code, password);
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
             if (result.Succeeded)
             {
                 //todo: move email text and subject to config

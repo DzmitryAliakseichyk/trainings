@@ -16,10 +16,8 @@ namespace WebApi
 {
     internal class ConfigureIoc
     {
-        internal static void Configure(
-            IServiceCollection services, 
-            IConfiguration configuration,
-            IHostingEnvironment env)
+        internal static void Configure(IServiceCollection services,
+            IConfiguration configuration)
         {
             services.AddTransient<IJwtTokenGenerator, JwtTokenGenerator>();
             services.AddTransient<IJwtTokenHelper, JwtTokenHelper>();
@@ -33,10 +31,7 @@ namespace WebApi
 
             services.AddSingleton<IUserMapper, UserMapper>();
 
-            if (env.IsDevelopment())
-            {
-                services.AddSingleton<IEmailSender, LocalEmailSender>();
-            }
+            services.AddSingleton<IEmailSender, EmailSender>();
         }
     }
 }

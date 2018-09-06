@@ -37,7 +37,7 @@ namespace WebApi
             
             ConfigureSettings.Configure(services, _configuration);
 
-            ConfigureIoc.Configure(services, _configuration, _env);
+            ConfigureIoc.Configure(services, _configuration);
             
             ConfigeScheduledTasks.Configure(services, _configuration, _loggerFactory);
             

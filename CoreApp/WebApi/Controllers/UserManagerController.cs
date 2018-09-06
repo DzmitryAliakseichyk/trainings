@@ -104,11 +104,11 @@ namespace WebApi.Controllers
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.Action(
                     "ConfirmEmail", 
                     "Account",
-                    values: new { userId = user.Id, code },
+                    values: new { userId = user.Id, token },
                     protocol: Request.Scheme);
 
                 //todo: move email message to config

@@ -40,9 +40,9 @@ namespace WebApi.Controllers
         /// <response code="404">User not found</response>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            if (userId == null || code == null)
+            if (userId == null || token == null)
             {
                 return BadRequest();
             }
@@ -52,7 +52,7 @@ namespace WebApi.Controllers
             {
                 return NotFound();
             }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
+            var result = await _userManager.ConfirmEmailAsync(user, token);
 
             if (result.Succeeded)
             {
@@ -76,16 +76,9 @@ namespace WebApi.Controllers
         [Authorize]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailViewModel viewModel)
         {
-            var userId = viewModel.UserId;
+            var userId = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Sid))?.Value;
 
-            if (userId == null)
-            {
-                return BadRequest();
-            }
-
-            var currentUserId = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Sid))?.Value;
-
-            if (string.IsNullOrWhiteSpace(currentUserId) || !currentUserId.Equals(userId))
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return Forbid();
             }
@@ -97,9 +90,10 @@ namespace WebApi.Controllers
                 return NotFound();
             }
 
-            var code = await _userManager.GenerateChangeEmailTokenAsync(user, viewModel.NewEmail);
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, viewModel.NewEmail);
 
-            var callbackUrl = Url.Action("UpdateNewEmail", "Account", new { userId = user.Id, code = code, newEmail = viewModel.NewEmail }, protocol: HttpContext.Request.Scheme);
+            //todo: generate route
+            var callbackUrl = Url.Action("UpdateNewEmail", "Account", new { userId = user.Id, token, newEmail = viewModel.NewEmail }, protocol: HttpContext.Request.Scheme);
 
             //todo: move email text and subject to config
             await _emailSender.SendEmailAsync(viewModel.NewEmail, "Update Email",
@@ -108,6 +102,7 @@ namespace WebApi.Controllers
             return Ok();
         }
 
+        //todo: make it authorize
         /// <summary>
         /// Update user email
         /// </summary>
@@ -116,9 +111,9 @@ namespace WebApi.Controllers
         /// <response code="404">User not found</response>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateNewEmail(string userId, string code, string newEmail)
+        public async Task<IActionResult> UpdateNewEmail(string userId, string token, string newEmail)
         {
-            if (userId == null || code == null)
+            if (userId == null || token == null)
             {
                 return BadRequest();
             }
@@ -128,13 +123,14 @@ namespace WebApi.Controllers
             {
                 return NotFound();
             }
-            var result = await _userManager.ChangeEmailAsync(user, newEmail, code);
+            var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
 
             if (result.Succeeded)
             {
                 //todo: move email text and subject to config
                 await _emailSender.SendEmailAsync(user.Email, "Email was updated",
                     "Your email was updated");
+                //todo: logout
                 return Ok();
             }
 

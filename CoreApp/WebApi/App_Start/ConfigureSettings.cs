@@ -24,7 +24,7 @@ namespace WebApi
                 options.ExpitarionsOffsetInMinutes = int.TryParse(configuration.GetSection("Jwt:ExpitarionsOffsetInMinutes").Value, out var expiration) ? expiration : 0;
             });
 
-            services.Configure<EmailSenderOptions>(configuration);
+            services.Configure<EmailSenderOptions>(configuration.GetSection("EmailConfiguration"));
         }
     }
 }
