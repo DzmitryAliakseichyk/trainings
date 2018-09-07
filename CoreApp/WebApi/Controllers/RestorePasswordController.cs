@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +9,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Models;
+using WebApi.Email;
 using WebApi.ViewModels;
 
 namespace WebApi.Controllers
@@ -19,16 +22,18 @@ namespace WebApi.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly IPasswordGenerator _passwordGenerator;
+        private readonly IEmailTemplateProvider _emailTemplateProvider;
 
         public RestorePasswordController(
             UserManager<AppUser> userManager, 
             IEmailSender emailSender, 
-            IPasswordGenerator passwordGenerator
-            )
+            IPasswordGenerator passwordGenerator, 
+            IEmailTemplateProvider emailTemplateProvider)
         {
             _userManager = userManager;
             _emailSender = emailSender;
             _passwordGenerator = passwordGenerator;
+            _emailTemplateProvider = emailTemplateProvider;
         }
 
         /// <summary>
@@ -51,8 +56,11 @@ namespace WebApi.Controllers
             var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={user.Email}&token={token}";
 
             //todo: move email text and subject to config
-            await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                $"Please reset your password by clicking here: <a href=\"{callbackUrl}\">link</a>");
+            await _emailSender.SendEmailAsync(model.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.ForgotPassword),
+                _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ForgotPassword, new string[]
+                {
+                    HtmlEncoder.Default.Encode(callbackUrl)
+                }));
             return Ok();
         }
 
@@ -75,9 +83,11 @@ namespace WebApi.Controllers
             var result = await _userManager.ResetPasswordAsync(user, model.Token, password);
             if (result.Succeeded)
             {
-                //todo: move email text and subject to config
-                await _emailSender.SendEmailAsync(user.Email, "New Password",
-                    $"New password is {password}");
+                await _emailSender.SendEmailAsync(user.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.ForgotPassword),
+                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ForgotPassword, new string[]
+                    {
+                        password
+                    }));
 
                 return Ok();
             }

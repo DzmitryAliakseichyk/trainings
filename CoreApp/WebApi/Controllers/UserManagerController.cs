@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Models;
+using WebApi.Email;
 using WebApi.Mappers;
 using WebApi.ViewModels;
 
@@ -26,6 +27,7 @@ namespace WebApi.Controllers
         private readonly IPasswordGenerator _passwordGenerator;
         private readonly ITokenProvider _tokenProvider;
         private readonly IEmailSender _emailSender;
+        private readonly IEmailTemplateProvider _emailTemplateProvider;
         private readonly IUserMapper _mapper;
         private readonly ILogger<UserManagerController> _logger;
 
@@ -35,13 +37,15 @@ namespace WebApi.Controllers
             ITokenProvider tokenProvider, 
             IEmailSender emailSender,
             IUserMapper mapper,
-            ILogger<UserManagerController> logger)
+            ILogger<UserManagerController> logger, 
+            IEmailTemplateProvider emailTemplateProvider)
         {
             _userManager = userManager;
             _passwordGenerator = passwordGenerator;
             _tokenProvider = tokenProvider;
             _emailSender = emailSender;
             _logger = logger;
+            _emailTemplateProvider = emailTemplateProvider;
             _mapper = mapper;
         }
 
@@ -107,9 +111,10 @@ namespace WebApi.Controllers
                 //todo: generate url link to ui route, that will handle email confirmation
                 var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={user.Email}&token={token}";
 
-                //todo: move email message to config
-                await _emailSender.SendEmailAsync(user.Email, "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>. Your password is {password}");
+                await _emailSender.SendEmailAsync(
+                    user.Email, 
+                    _emailTemplateProvider.GetSubject(EmailTemplateNames.ConfirmEmail),
+                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ConfirmEmail, new string[] { HtmlEncoder.Default.Encode(callbackUrl), password}));
                 
                 //todo: return valid Uri
                 return Created(string.Empty, _mapper.Map(user));

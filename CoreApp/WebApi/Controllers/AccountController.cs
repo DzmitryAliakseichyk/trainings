@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Business.Providers;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Models;
+using WebApi.Email;
 using WebApi.Extensions;
 using WebApi.ViewModels;
 
@@ -23,18 +26,20 @@ namespace WebApi.Controllers
         private readonly IEmailSender _emailSender;
         private readonly IPasswordGenerator _passwordGenerator;
         private readonly ITokenProvider _tokenProvider;
+        private readonly IEmailTemplateProvider _emailTemplateProvider;
 
         public AccountController(
             UserManager<AppUser> userManager, 
             IEmailSender emailSender, 
             IPasswordGenerator passwordGenerator, 
-            ITokenProvider tokenProvider
-            )
+            ITokenProvider tokenProvider, 
+            IEmailTemplateProvider emailTemplateProvider)
         {
             _userManager = userManager;
             _emailSender = emailSender;
             _passwordGenerator = passwordGenerator;
             _tokenProvider = tokenProvider;
+            _emailTemplateProvider = emailTemplateProvider;
         }
 
         /// <summary>
@@ -57,9 +62,8 @@ namespace WebApi.Controllers
 
             if (result.Succeeded)
             {
-                //todo: move email text and subject to config
-                await _emailSender.SendEmailAsync(user.Email, "Email was confirmed",
-                    "Your email was confirmed");
+                await _emailSender.SendEmailAsync(user.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.EmailConfirmed),
+                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.EmailConfirmed));
                 return Ok();
             }
 
@@ -96,9 +100,11 @@ namespace WebApi.Controllers
             //todo: generate url link to ui route, that will handle email changing
              var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={model.NewEmail}&token={token}";
 
-            //todo: move email text and subject to config
-            await _emailSender.SendEmailAsync(model.NewEmail, "Update Email",
-                $"Please confirm your new email by clicking here: <a href=\"{callbackUrl}\">link</a>");
+            await _emailSender.SendEmailAsync(model.NewEmail, _emailTemplateProvider.GetSubject(EmailTemplateNames.UpdateEmail),
+                _emailTemplateProvider.GetEmailBody(EmailTemplateNames.EmailConfirmed, new string[]
+                {
+                    HtmlEncoder.Default.Encode(callbackUrl)
+                }));
 
             return Ok();
         }
@@ -130,9 +136,8 @@ namespace WebApi.Controllers
 
             if (result.Succeeded)
             {
-                //todo: move email text and subject to config
-                await _emailSender.SendEmailAsync(user.Email, "Email was updated",
-                    "Your email was updated");
+                await _emailSender.SendEmailAsync(user.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.EmailUpdated),
+                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.EmailUpdated));
                 
                 _tokenProvider.DeleteAccessTokenByUserId(user.Id);
                 _tokenProvider.DeleteRefreshTokensByUserId(user.Id);
@@ -171,9 +176,8 @@ namespace WebApi.Controllers
 
             if (result.Succeeded)
             {
-                //todo: move email text and subject to config
-                await _emailSender.SendEmailAsync(user.Email, "Password was updated",
-                    "Your password was updated");
+                await _emailSender.SendEmailAsync(user.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.PasswordUpdated),
+                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.PasswordUpdated));
 
                 return Ok();
             }

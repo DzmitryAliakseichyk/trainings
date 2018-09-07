@@ -7,7 +7,7 @@ using MimeKit;
 using MimeKit.Text;
 using WebApi.Models.Settings;
 
-namespace WebApi.Authentication.Email
+namespace WebApi.Email
 {
     public class EmailSender : IEmailSender
     {
@@ -25,7 +25,7 @@ namespace WebApi.Authentication.Email
             emailMessage.From.Add(new MailboxAddress(_options.FromName, _options.FromAddress));
             emailMessage.To.Add(new MailboxAddress(string.Empty, email));
             emailMessage.Subject = subject;
-            emailMessage.Body = new TextPart(TextFormat.Html) { Text = htmlMessage };
+            emailMessage.Body = new TextPart(TextFormat.Html) { Text = System.Web.HttpUtility.HtmlDecode(htmlMessage) };
 
             using (var client = new SmtpClient())
             {

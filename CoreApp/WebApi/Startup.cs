@@ -41,6 +41,8 @@ namespace WebApi
             
             ConfigeScheduledTasks.Configure(services, _configuration, _loggerFactory);
             
+            ConfigureEmailTemplates.Configure(services, _configuration);
+
             services.AddMvc(options =>
                 {
                     options.OutputFormatters.RemoveType<TextOutputFormatter>();

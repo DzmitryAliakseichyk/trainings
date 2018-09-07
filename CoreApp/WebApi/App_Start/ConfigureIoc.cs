@@ -7,9 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using MongoDB.Driver;
 using WebApi.Authentication;
-using WebApi.Authentication.Email;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Helpers;
+using WebApi.Email;
 using WebApi.Mappers;
 
 namespace WebApi
@@ -32,6 +32,7 @@ namespace WebApi
             services.AddSingleton<IUserMapper, UserMapper>();
 
             services.AddSingleton<IEmailSender, EmailSender>();
+            services.AddSingleton<IEmailTemplateProvider, EmailTemplateProvider>();
         }
     }
 }
