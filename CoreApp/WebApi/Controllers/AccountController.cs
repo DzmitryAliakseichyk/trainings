@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
+﻿using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Business.Providers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +10,7 @@ using WebApi.Authentication.Generators;
 using WebApi.Authentication.Models;
 using WebApi.Email;
 using WebApi.Extensions;
+using WebApi.Mappers;
 using WebApi.ViewModels;
 
 namespace WebApi.Controllers
@@ -24,23 +21,95 @@ namespace WebApi.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSender _emailSender;
-        private readonly IPasswordGenerator _passwordGenerator;
         private readonly ITokenProvider _tokenProvider;
         private readonly IEmailTemplateProvider _emailTemplateProvider;
+        private readonly IUserMapper _mapper;
 
         public AccountController(
             UserManager<AppUser> userManager, 
             IEmailSender emailSender, 
             IPasswordGenerator passwordGenerator, 
             ITokenProvider tokenProvider, 
-            IEmailTemplateProvider emailTemplateProvider)
+            IEmailTemplateProvider emailTemplateProvider, 
+            IUserMapper mapper)
         {
             _userManager = userManager;
             _emailSender = emailSender;
-            _passwordGenerator = passwordGenerator;
             _tokenProvider = tokenProvider;
             _emailTemplateProvider = emailTemplateProvider;
+            _mapper = mapper;
         }
+
+        /// <summary>
+        /// Get user info
+        /// </summary>
+        /// <response code="200">Return user information</response>
+        /// <response code="403">Not authorized</response>
+        /// <response code="404">User not found</response>
+        [HttpGet]
+        [Authorize]
+        [ProducesResponseType(typeof(UserViewModel), 200)]
+        public async Task<IActionResult> GetUser()
+        {
+            var userId = User.GetUserId();
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Forbid();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(_mapper.Map(user));
+        }
+
+        /// <summary>
+        /// Update user info
+        /// </summary>
+        /// <remarks>
+        /// This action does nothing
+        /// </remarks>
+        /// <response code="200">User updated</response>
+        /// <response code="403">Not authorized</response>
+        /// <response code="404">User not found</response>
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserViewModel model)
+        {
+            var userId = User.GetUserId();
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Forbid();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            //update user
+            //user.UserName == model.UserName;
+
+            //var result = await _userManager.UpdateAsync(user);
+
+            //if (result.Succeeded)
+            //{
+            //    return Ok();
+            //}
+
+            //return StatusCode((int)HttpStatusCode.InternalServerError, result.Errors);
+            
+            return Ok();
+        }
+
 
         /// <summary>
         /// Confirm user email
@@ -79,7 +148,7 @@ namespace WebApi.Controllers
         /// <response code="404">User not found</response>
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailViewModel model)
+        public async Task<IActionResult> SendChangeEmailToken([FromBody] ChangeEmailViewModel model)
         {
             var userId = User.GetUserId();
 
@@ -101,7 +170,7 @@ namespace WebApi.Controllers
              var callbackUrl = $"{Request.Scheme}:\\\\{Request.Host}\\UI_ROUTE?email={model.NewEmail}&token={token}";
 
             await _emailSender.SendEmailAsync(model.NewEmail, _emailTemplateProvider.GetSubject(EmailTemplateNames.UpdateEmail),
-                _emailTemplateProvider.GetEmailBody(EmailTemplateNames.EmailConfirmed, new string[]
+                _emailTemplateProvider.GetEmailBody(EmailTemplateNames.EmailConfirmed, new[]
                 {
                     HtmlEncoder.Default.Encode(callbackUrl)
                 }));
@@ -115,9 +184,9 @@ namespace WebApi.Controllers
         /// <response code="200">User email updated</response>
         /// <response code="400">Input parameters are wrong</response>
         /// <response code="404">User not found</response>
-        [HttpPost]
+        [HttpPut]
         [Authorize]
-        public async Task<IActionResult> UpdateNewEmail([FromBody] EmailConfirmationViewModel model)
+        public async Task<IActionResult> ChangeEmail([FromBody] EmailConfirmationViewModel model)
         {
             var userId = User.GetUserId();
 

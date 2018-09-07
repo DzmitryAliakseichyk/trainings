@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +12,7 @@ using WebApi.ViewModels;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     [AllowAnonymous]
     public class RestorePasswordController : ControllerBase
@@ -42,7 +40,7 @@ namespace WebApi.Controllers
         /// <response code="200">Email was sent</response>
         /// <response code="404">User not found</response>
         [HttpPost]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
+        public async Task<IActionResult> SendPasswordResetToken([FromBody] ForgotPasswordViewModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
@@ -57,7 +55,7 @@ namespace WebApi.Controllers
 
             //todo: move email text and subject to config
             await _emailSender.SendEmailAsync(model.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.ForgotPassword),
-                _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ForgotPassword, new string[]
+                _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ForgotPassword, new[]
                 {
                     HtmlEncoder.Default.Encode(callbackUrl)
                 }));
@@ -84,7 +82,7 @@ namespace WebApi.Controllers
             if (result.Succeeded)
             {
                 await _emailSender.SendEmailAsync(user.Email, _emailTemplateProvider.GetSubject(EmailTemplateNames.ForgotPassword),
-                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ForgotPassword, new string[]
+                    _emailTemplateProvider.GetEmailBody(EmailTemplateNames.ForgotPassword, new[]
                     {
                         password
                     }));

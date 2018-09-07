@@ -19,7 +19,7 @@ namespace WebApi.Email
             return template?.Subject;
         }
 
-        public string GetEmailBody(string templateName, string[] messages = null)
+        public string GetEmailBody(string templateName, object[] messages = null)
         {
             var template = _emailTemplates.FirstOrDefault(x => x.Name.Equals(EmailTemplateNames.ConfirmEmail));
             if (template != null)

@@ -3,6 +3,6 @@
     public interface IEmailTemplateProvider
     {
         string GetSubject(string templateName);
-        string GetEmailBody(string templateName, string[] messages = null);
+        string GetEmailBody(string templateName, object[] messages = null);
     }
 }
