@@ -16,11 +16,13 @@ namespace WebApi.Authentication.Generators
     {
         private readonly JwtSettingsModel _jwtSettings;
         private readonly RoleManager<AppRole> _roleManager;
+        private readonly UserManager<AppUser> _userManager;
 
-        public JwtTokenGenerator(IOptions<JwtSettingsModel> jwtSettings, RoleManager<AppRole> roleManager)
+        public JwtTokenGenerator(IOptions<JwtSettingsModel> jwtSettings, RoleManager<AppRole> roleManager, UserManager<AppUser> userManager)
         {
             _jwtSettings = jwtSettings.Value;
             _roleManager = roleManager;
+            _userManager = userManager;
         }
        
         public string Generate(AppUser user)
@@ -31,7 +33,9 @@ namespace WebApi.Authentication.Generators
                 new Claim(ClaimTypes.Name, user.UserName),
             };
 
-            var roles = _roleManager.Roles.Where(r => user.Roles.Contains(r.Id)).ToList();
+            var userRoles = _userManager.GetRolesAsync(user).Result;
+            
+            var roles = _roleManager.Roles.Where(r => userRoles.Contains(r.Name)).ToList();
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role.RoleEnumValue.ToString()));

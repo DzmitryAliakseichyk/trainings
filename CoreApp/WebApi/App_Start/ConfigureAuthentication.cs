@@ -1,11 +1,11 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using WebApi.Authentication;
 using WebApi.Authentication.Models;
 using WebApi.Extensions;
 
@@ -17,10 +17,7 @@ namespace WebApi
         {
             services
                 .AddIdentity<AppUser, AppRole>(options => { options.SignIn.RequireConfirmedEmail = true; })
-                .AddMongoDbStores<AppUser, AppRole, Guid>(
-                    configuration.GetSection("MongoConnection:ConnectionString").Value, 
-                    configuration.GetSection("MongoConnection:Database").Value
-                    )
+                .AddEntityFrameworkStores<AppIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
             services
