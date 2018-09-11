@@ -24,9 +24,9 @@ namespace WebApi
             services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
             services.AddSingleton<IPasswordGenerator, PasswordGenerator>();
 
-            services.AddTransient<DbContext, AppIdentityDbContext>();
-            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddTransient<IAccessTokenRepository, AccessTokenRepository>();
+            services.AddScoped<DbContext, AppIdentityDbContext>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<IAccessTokenRepository, AccessTokenRepository>();
 
             services.AddTransient<ITokenProvider, TokenProvider>();
 

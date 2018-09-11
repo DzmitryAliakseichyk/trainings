@@ -5,20 +5,21 @@ using NCrontab;
 using ScheduledJobs;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using WebApi.Extensions;
 
 namespace WebApi.Jobs
 {
     public class RefreshTokenCleanupJob : BaseScheduledHostedService
     {
-        private readonly ITokenProvider _tokenProvider;
+        private readonly IServiceProvider _provider;
 
         public RefreshTokenCleanupJob(
             IConfiguration config,
             ILogger<RefreshTokenCleanupJob> logger,
-            ITokenProvider tokenProvider) 
+            IServiceProvider provider) 
         {
-            _tokenProvider = tokenProvider;
+            _provider = provider;
 
             Schedule = CrontabSchedule.Parse(config.GetCron(nameof(RefreshTokenCleanupJob)));
             NextRun = Schedule.GetNextOccurrence(DateTime.Now);
@@ -30,9 +31,13 @@ namespace WebApi.Jobs
 
         protected override Task Process()
         {
-            Logger.LogInformation($"{nameof(RefreshTokenCleanupJob)} start process at {LastRun}");
-            _tokenProvider.DeleteRefreshToken(x => DateTimeOffset.Now > x.ExpirationDate);
-
+            using (var scope = _provider.CreateScope())
+            {
+                var tokenProvider = scope.ServiceProvider.GetRequiredService<ITokenProvider>();
+                Logger.LogInformation($"{nameof(RefreshTokenCleanupJob)} start process at {LastRun}");
+                tokenProvider.DeleteRefreshToken(x => DateTimeOffset.Now > x.ExpirationDate);
+            }
+            
             return Task.CompletedTask;
         }
     }

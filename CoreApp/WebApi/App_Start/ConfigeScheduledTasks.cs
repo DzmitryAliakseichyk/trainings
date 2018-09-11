@@ -20,9 +20,8 @@ namespace WebApi
             //services.AddHostedService<ScheduledJob1>();
             //services.AddHostedService<ScheduledJob2>();
 
-            //todo: fix problems with dbcontex in hosted service
-            //services.AddHostedService<RefreshTokenCleanupJob>();
-            //services.AddHostedService<AccessTokenCleanupJob>();
+            services.AddHostedService<RefreshTokenCleanupJob>();
+            services.AddHostedService<AccessTokenCleanupJob>();
 
             var logger = loggerFactory.CreateLogger("ScheduledTasks");
             services.AddTransient<IHostedService, SchedulerHostedService>(serviceProvider =>

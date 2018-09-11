@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Business.Providers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NCrontab;
 using ScheduledJobs;
@@ -11,14 +12,14 @@ namespace WebApi.Jobs
 {
     public class AccessTokenCleanupJob : BaseScheduledHostedService
     {
-        private readonly ITokenProvider _tokenProvider;
+        private readonly IServiceProvider _provider;
 
         public AccessTokenCleanupJob(
             IConfiguration config,
             ILogger<AccessTokenCleanupJob> logger,
-            ITokenProvider tokenProvider)
+            IServiceProvider provider)
         {
-            _tokenProvider = tokenProvider;
+            _provider = provider;
 
             Schedule = CrontabSchedule.Parse(config.GetCron(nameof(AccessTokenCleanupJob)));
             NextRun = Schedule.GetNextOccurrence(DateTime.Now);
@@ -30,8 +31,12 @@ namespace WebApi.Jobs
 
         protected override Task Process()
         {
-            Logger.LogInformation($"{nameof(AccessTokenCleanupJob)} start process at {LastRun}");
-            _tokenProvider.DeleteAccessToken(x => DateTimeOffset.Now > x.ExpirationDate);
+            using (var scope = _provider.CreateScope())
+            {
+                var tokenProvider = scope.ServiceProvider.GetRequiredService<ITokenProvider>();
+                Logger.LogInformation($"{nameof(AccessTokenCleanupJob)} start process at {LastRun}");
+                tokenProvider.DeleteAccessToken(x => DateTimeOffset.Now > x.ExpirationDate);
+            }
 
             return Task.CompletedTask;
         }
