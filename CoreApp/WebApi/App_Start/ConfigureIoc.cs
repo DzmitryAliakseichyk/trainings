@@ -1,11 +1,11 @@
 ﻿using Business.Providers;
-using Data;
 using Data.Repositories;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Data.Repositories.MsSql;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
-using MongoDB.Driver;
 using WebApi.Authentication;
 using WebApi.Authentication.Generators;
 using WebApi.Authentication.Helpers;
@@ -24,9 +24,10 @@ namespace WebApi
             services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
             services.AddSingleton<IPasswordGenerator, PasswordGenerator>();
 
-            services.AddSingleton<IMongoWrapper, MongoWrapper>();
-            services.AddSingleton<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddSingleton<IAccessTokenRepository, AccessTokenRepository>();
+            services.AddTransient<DbContext, AppIdentityDbContext>();
+            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddTransient<IAccessTokenRepository, AccessTokenRepository>();
+
             services.AddTransient<ITokenProvider, TokenProvider>();
 
             services.AddSingleton<IUserMapper, UserMapper>();

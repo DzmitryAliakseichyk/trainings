@@ -1,4 +1,5 @@
 ﻿using System;
+using Common.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Authentication.Models;
@@ -11,6 +12,10 @@ namespace WebApi.Authentication
             : base(options)
         {
         }
+
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+        public DbSet<AccessToken> AccessTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

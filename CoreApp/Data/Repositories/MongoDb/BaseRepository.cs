@@ -1,6 +1,6 @@
 ﻿using MongoDB.Driver;
 
-namespace Data.Repositories
+namespace Data.Repositories.MongoDb
 {
     public abstract class BaseRepository
     {

@@ -20,9 +20,6 @@ namespace WebApi
         {
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
-                var context = serviceScope.ServiceProvider.GetService<AppIdentityDbContext>();
-                context.Database.EnsureCreated();
-
                 var configuration = serviceScope.ServiceProvider.GetRequiredService<IConfiguration>();
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
                 var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();

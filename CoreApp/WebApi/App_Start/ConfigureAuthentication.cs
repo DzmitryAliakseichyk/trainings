@@ -45,8 +45,8 @@ namespace WebApi
                 options.AddPolicy("AdministratorOnly", policy => policy.RequireRole(
                     AppRoleEnum.Administrator.ToString(),
                     AppRoleEnum.SuperAdministrator.ToString())));
-
-            services.AddSingleton<IAuthorizationHandler, JwtRegistrationHandler>();
+            
+            services.AddTransient<IAuthorizationHandler, JwtRegistrationHandler>();
         }
     }
 }

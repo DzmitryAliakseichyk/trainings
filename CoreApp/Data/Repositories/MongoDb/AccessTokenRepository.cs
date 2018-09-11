@@ -1,7 +1,7 @@
 ﻿using Common.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Data.Repositories
+namespace Data.Repositories.MongoDb
 {
     public class AccessTokenRepository : Repository<AccessToken>, IAccessTokenRepository
     {

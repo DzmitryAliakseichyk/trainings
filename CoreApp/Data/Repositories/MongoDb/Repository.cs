@@ -4,7 +4,7 @@ using Common.Models;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
-namespace Data.Repositories
+namespace Data.Repositories.MongoDb
 {
     public abstract class Repository<T> : BaseRepository, IRepository<T> where T : BaseModel
     {
@@ -43,11 +43,11 @@ namespace Data.Repositories
             Db = mongoWrapper.Database;
         }
 
-        public virtual T Create(T token)
+        public virtual T Create(T entity)
         {
             try
             {
-                MongoCollection.InsertOne(token);
+                MongoCollection.InsertOne(entity);
             }
             catch (Exception exception)
             {
@@ -55,7 +55,7 @@ namespace Data.Repositories
                 throw;
             }
 
-            return token;
+            return entity;
         }
 
         public virtual T Get(Guid id)
@@ -63,12 +63,12 @@ namespace Data.Repositories
             return Get(x => x.Id == id);
         }
 
-        public virtual T Get(Expression<Func<T, bool>> condition)
+        public T Get(Expression<Func<T, bool>> filter = null, string includeProperties = default(string))
         {
             T token;
             try
             {
-                token = MongoCollection.Find(condition).SingleOrDefault();
+                token = MongoCollection.Find(filter).SingleOrDefault();
             }
             catch (Exception exception)
             {
@@ -78,13 +78,12 @@ namespace Data.Repositories
 
             return token;
         }
-
-
-        public virtual bool CheckIfExist(Expression<Func<T, bool>> condition)
+        
+        public virtual bool CheckIfExist(Expression<Func<T, bool>> filter)
         {
             try
             {
-                return MongoCollection.Find(condition).CountDocuments() > 0;
+                return MongoCollection.Find(filter).CountDocuments() > 0;
             }
             catch (Exception exception)
             {
@@ -93,13 +92,13 @@ namespace Data.Repositories
             }
         }
 
-        public virtual T Update(T token)
+        public virtual T Update(T entityToUpdate)
         {
             try
             {
                 MongoCollection.ReplaceOne(
-                    f => f.Id == token.Id,
-                    token);
+                    f => f.Id == entityToUpdate.Id,
+                    entityToUpdate);
             }
             catch (Exception exception)
             {
@@ -107,14 +106,14 @@ namespace Data.Repositories
                 throw;
             }
 
-            return token;
+            return entityToUpdate;
         }
 
-        public virtual void Delete(Expression<Func<T, bool>> condition)
+        public virtual void Delete(Expression<Func<T, bool>> filter)
         {
             try
             {
-                MongoCollection.DeleteMany<T>(condition);
+                MongoCollection.DeleteMany<T>(filter);
             }
             catch (Exception exception)
             {
