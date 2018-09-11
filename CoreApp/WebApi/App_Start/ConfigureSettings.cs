@@ -23,6 +23,8 @@ namespace WebApi
                 options.Audience = configuration.GetSection("Jwt:Audience").Value;
                 options.ExpitarionsOffsetInMinutes = int.TryParse(configuration.GetSection("Jwt:ExpitarionsOffsetInMinutes").Value, out var expiration) ? expiration : 0;
             });
+
+            services.Configure<EmailSenderOptions>(configuration.GetSection("EmailConfiguration"));
         }
     }
 }

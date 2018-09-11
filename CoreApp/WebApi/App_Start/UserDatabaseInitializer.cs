@@ -48,7 +48,8 @@ namespace WebApi
                         superAdmin = new AppUser
                         {
                             UserName = configuration["SuperAdmin:Name"],
-                            Email = configuration["SuperAdmin:Email"]
+                            Email = configuration["SuperAdmin:Email"],
+                            EmailConfirmed = true
                         };
 
                         var result = await userManager.CreateAsync(superAdmin, configuration["SuperAdmin:Password"]);

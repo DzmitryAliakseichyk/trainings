@@ -1,0 +1,32 @@
+{
+  "Templates": [
+    {
+      "Name": "ConfirmEmail",
+      "Subject": "Confirm your Email address"
+    },
+    {
+      "Name": "EmailConfirmed",
+      "Subject": "Email was confirmed"
+    },
+    {
+      "Name": "UpdateEmail",
+      "Subject": "Update Email"
+    },
+    {
+      "Name": "EmailUpdated",
+      "Subject": "Email was updated"
+    },
+    {
+      "Name": "ForgotPassword",
+      "Subject": "Confirm your Email address"
+    },
+    {
+      "Name": "NewPassword",
+      "Subject": "Confirm your Email address"
+    },
+    {
+      "Name": "PasswordUpdated",
+      "Subject": "Password was updated"
+    }
+  ] 
+}
